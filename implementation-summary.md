@@ -1,5 +1,18 @@
 # Implementation Summary
 
+## 2026-05-13 13:01 - Super Admin core management
+
+- Branch: `master`
+- Commit: pending before commit; final pushed hash reported after Git creates it
+- Pushed: pending
+- Implemented: Local development seed data for tutors/parents/students, Super Admin dashboard metrics, RBAC-protected management routes, user list/filter/toggle active, tutor list/filter/verify, student list/filter/assign tutor, and activity log list/filter.
+- Files changed: `cmd/server/main.go`, `cmd/seed/main.go`, `internal/handlers/admin.go`, `internal/repositories/core_data.go`, `internal/seed/local.go`, `internal/services/admin_service.go`, `internal/services/admin_service_test.go`, `web/templates/dashboard.tmpl`, `web/templates/admin_users.tmpl`, `web/templates/admin_tutors.tmpl`, `web/templates/admin_students.tmpl`, `web/templates/admin_activity.tmpl`, `web/static/css/app.css`, `docs/superpowers/plans/2026-05-13-super-admin-core-management.md`, `CHANGELOG.md`, `implementation-summary.md`.
+- Automated tests: `go test ./...` passed. Initial red run failed because `NewAdminService`, `AdminActionInput`, and `SetUserActiveInput` were missing.
+- Browser/manual tests: `go run ./cmd/seed` passed. In-app browser verified Super Admin login, dashboard metrics, user list, tutor role filter, user email search, unverified tutor filter, unassigned student filter, tutor verification action, student assignment action, activity log shows `verify_tutor` and `assign_tutor`, activity action filter, and active/inactive user toggle.
+- Verified test cases: `TC-SA-1.1`, `TC-SA-1.2`, `TC-SA-2.1`, `TC-SA-2.2`, `TC-SA-2.3`, `TC-SA-2.4`, `TC-SA-2.5`, `TC-SA-3.1`, `TC-SA-3.2`, `TC-SA-3.3`, `TC-SA-4.1`, `TC-SA-4.2`, `TC-SA-5.1`, `TC-SA-5.2`, `TC-SA-6.1`, `TC-SA-6.2`, `TC-SA-6.3`, `TC-SA-8.1`, `TC-SA-8.2`, `TC-SA-8.3`, `TC-SA-12.1`, `TC-SA-12.3`, `TC-SA-13.1`. Detail-page cases such as `TC-SA-4.3`, `TC-SA-5.3`, `TC-SA-9.*`, `TC-SA-10.*`, and `TC-SA-11.*` remain pending.
+- Known issues: Detail pages, schedule management, lesson sessions, reports, and role-specific Tutor/Parent dashboards are still pending.
+- Next steps: Add Phase 3 scheduling models/pages and then lesson sessions/reports, or fill Super Admin detail/capacity pages before moving to schedules.
+
 ## 2026-05-13 12:53 - Google SSO and RBAC
 
 - Branch: `master`

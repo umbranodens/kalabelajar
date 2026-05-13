@@ -1,5 +1,25 @@
 # Changelog
 
+## 2026-05-13 - Super Admin core management
+
+### Added
+- Added local development seed data for tutors, parents, students, verified/unverified/inactive tutor states, and assigned/unassigned students.
+- Added Super Admin dashboard metrics for tutors, students, parents, pending approvals, and activity count.
+- Added RBAC-protected Super Admin pages for users, tutors, students, and activity logs.
+- Added user search/role/status filters and active/inactive toggle.
+- Added tutor verification flow with activity logging.
+- Added student assignment/reassignment flow using only verified active tutors.
+- Added activity log list and action filter.
+
+### Tested
+- Ran `go test ./...` successfully.
+- Ran `go run ./cmd/seed` successfully.
+- Browser-tested Super Admin login, dashboard metrics, user role/search filters, unverified tutor filter, unassigned student filter, tutor verification, student assignment, activity log filter, and user active toggle.
+
+### Notes
+- Detail pages for tutor/student/parent profiles are still pending.
+- Schedule, lesson session, and lesson report phases remain pending.
+
 ## 2026-05-13 - Google SSO and RBAC
 
 ### Added

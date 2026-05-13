@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ .Title }}</title>
+  <link rel="stylesheet" href="/static/css/app.css">
+</head>
+<body class="dashboard-page">
+  <aside class="sidebar"><div class="brand-mark light">Kala Belajar</div><nav><a href="/dashboard">Dashboard</a><a class="active" href="/admin/users">User</a><a href="/admin/tutors">Tutor</a><a href="/admin/students">Murid</a><a href="/admin/activity">Activity Log</a></nav></aside>
+  <main class="dashboard-main">
+    <header class="topbar"><div><p class="eyebrow">Super Admin</p><h1>Manajemen User</h1></div></header>
+    <section class="content-panel">
+      <form class="filter-bar" method="get">
+        <input type="text" name="q" placeholder="Cari nama atau email">
+        <select name="role"><option value="">Semua role</option><option value="superadmin">Super Admin</option><option value="tutor">Tutor</option><option value="parent">Parent</option><option value="pending">Menunggu Role</option></select>
+        <select name="status"><option value="">Semua status</option><option value="active">Aktif</option><option value="inactive">Nonaktif</option></select>
+        <button type="submit">Filter</button>
+      </form>
+      {{ if .Users }}
+      <div class="table-wrap"><table><thead><tr><th>Nama</th><th>Email</th><th>Role</th><th>Status</th><th>Aksi</th></tr></thead><tbody>
+        {{ range .Users }}
+        <tr>
+          <td>{{ .Name }}</td><td>{{ .Email }}</td>
+          <td>{{ if .Role }}{{ .Role.DisplayName }}{{ else }}Menunggu Role{{ end }}</td>
+          <td>{{ if .IsActive }}Aktif{{ else }}Nonaktif{{ end }}</td>
+          <td><form method="post" action="/admin/users/{{ .ID }}/active"><input type="hidden" name="is_active" value="{{ if .IsActive }}false{{ else }}true{{ end }}"><button class="secondary" type="submit">{{ if .IsActive }}Nonaktifkan{{ else }}Aktifkan{{ end }}</button></form></td>
+        </tr>
+        {{ end }}
+      </tbody></table></div>
+      {{ else }}<div class="empty-state">Tidak ada user yang cocok.</div>{{ end }}
+    </section>
+  </main>
+</body>
+</html>

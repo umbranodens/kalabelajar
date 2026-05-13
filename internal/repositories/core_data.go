@@ -45,6 +45,13 @@ func (r *UserRepository) UpdateOAuthProfile(ctx context.Context, user *models.Us
 	return nil
 }
 
+func (r *UserRepository) SetUserActive(ctx context.Context, userID uuid.UUID, isActive bool) error {
+	if err := r.db.WithContext(ctx).Model(&models.User{}).Where("id = ?", userID).Update("is_active", isActive).Error; err != nil {
+		return fmt.Errorf("set user active: %w", err)
+	}
+	return nil
+}
+
 func (r *UserRepository) FindByID(ctx context.Context, id uuid.UUID) (*models.User, error) {
 	var user models.User
 	if err := r.db.WithContext(ctx).Preload("Role").First(&user, "id = ?", id).Error; err != nil {
@@ -75,6 +82,13 @@ func (r *TutorRepository) FindByIDWithUser(ctx context.Context, id uuid.UUID) (*
 		return nil, fmt.Errorf("find tutor by id: %w", err)
 	}
 	return &tutor, nil
+}
+
+func (r *TutorRepository) VerifyTutor(ctx context.Context, tutorID uuid.UUID) error {
+	if err := r.db.WithContext(ctx).Model(&models.Tutor{}).Where("id = ?", tutorID).Update("is_verified", true).Error; err != nil {
+		return fmt.Errorf("verify tutor: %w", err)
+	}
+	return nil
 }
 
 type StudentRepository struct {

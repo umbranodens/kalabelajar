@@ -11,6 +11,7 @@ import (
 	"github.com/umbranodens/kalabelajar/internal/handlers"
 	"github.com/umbranodens/kalabelajar/internal/middleware"
 	"github.com/umbranodens/kalabelajar/internal/repositories"
+	"github.com/umbranodens/kalabelajar/internal/seed"
 	"github.com/umbranodens/kalabelajar/internal/services"
 )
 
@@ -38,6 +39,11 @@ func main() {
 	if _, err := seedService.SeedRolesAndSuperAdmin(context.Background()); err != nil {
 		log.Fatalf("seed roles and super admin: %v", err)
 	}
+	if cfg.App.Env != "production" {
+		if err := seed.LocalDevelopmentData(context.Background(), db); err != nil {
+			log.Fatalf("seed local development data: %v", err)
+		}
+	}
 
 	router := gin.Default()
 	router.LoadHTMLGlob("web/templates/*.tmpl")
@@ -52,6 +58,17 @@ func main() {
 	)
 	router.Use(middleware.LoadSession(repositories.NewSessionRepository(db)))
 	handlers.NewAuthHandler(authService, cfg.Google, cfg.App.URL).RegisterRoutes(router)
+	adminService := services.NewAdminService(
+		repositories.NewTutorRepository(db),
+		repositories.NewUserRepository(db),
+		repositories.NewActivityLogRepository(db),
+	)
+	assignmentService := services.NewAssignmentService(
+		repositories.NewStudentRepository(db),
+		repositories.NewTutorRepository(db),
+		repositories.NewActivityLogRepository(db),
+	)
+	handlers.NewAdminHandler(db, adminService, assignmentService).RegisterRoutes(router)
 
 	if err := router.Run(":" + cfg.App.Port); err != nil {
 		log.Fatalf("start server: %v", err)

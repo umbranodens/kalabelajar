@@ -8,6 +8,7 @@ import (
 	"github.com/umbranodens/kalabelajar/internal/config"
 	"github.com/umbranodens/kalabelajar/internal/database"
 	"github.com/umbranodens/kalabelajar/internal/repositories"
+	"github.com/umbranodens/kalabelajar/internal/seed"
 	"github.com/umbranodens/kalabelajar/internal/services"
 )
 
@@ -32,6 +33,11 @@ func main() {
 	admin, err := seeder.SeedRolesAndSuperAdmin(context.Background())
 	if err != nil {
 		log.Fatalf("seed roles and super admin: %v", err)
+	}
+	if cfg.App.Env != "production" {
+		if err := seed.LocalDevelopmentData(context.Background(), db); err != nil {
+			log.Fatalf("seed local development data: %v", err)
+		}
 	}
 
 	fmt.Printf("Seed selesai untuk %s. Super Admin siap: %s\n", cfg.App.Env, admin.Email)

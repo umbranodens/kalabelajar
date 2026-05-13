@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="id">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{{ .Title }}</title><link rel="stylesheet" href="/static/css/app.css"></head>
+<body class="dashboard-page">
+  <aside class="sidebar"><div class="brand-mark light">Kala Belajar</div><nav><a href="/dashboard">Dashboard</a><a href="/admin/users">User</a><a href="/admin/tutors">Tutor</a><a class="active" href="/admin/students">Murid</a><a href="/admin/activity">Activity Log</a></nav></aside>
+  <main class="dashboard-main">
+    <header class="topbar"><div><p class="eyebrow">Super Admin</p><h1>Manajemen Murid</h1></div></header>
+    <section class="content-panel">
+      <form class="filter-bar" method="get"><input type="text" name="q" placeholder="Cari murid"><select name="assignment"><option value="">Semua assignment</option><option value="assigned">Sudah Ada Tutor</option><option value="unassigned">Belum Ada Tutor</option></select><button type="submit">Filter</button></form>
+      {{ if .Students }}
+      <div class="table-wrap"><table><thead><tr><th>Nama</th><th>Parent</th><th>Kelas</th><th>Sekolah</th><th>Tutor</th><th>Assign</th></tr></thead><tbody>
+        {{ range .Students }}
+        <tr>
+          <td>{{ .Name }}</td><td>{{ .Parent.Name }}</td><td>{{ if .Grade }}{{ .Grade }}{{ else }}-{{ end }}</td><td>{{ if .School }}{{ .School }}{{ else }}-{{ end }}</td>
+          <td>{{ if .AssignedTutor }}{{ .AssignedTutor.User.Name }}{{ else }}Belum Ada Tutor{{ end }}</td>
+          <td><form method="post" action="/admin/students/{{ .ID }}/assign"><select name="tutor_id">{{ range $.Tutors }}<option value="{{ .ID }}">{{ .User.Name }}</option>{{ end }}</select><button type="submit">Assign Tutor</button></form></td>
+        </tr>
+        {{ end }}
+      </tbody></table></div>
+      {{ else }}<div class="empty-state">Tidak ada murid yang cocok.</div>{{ end }}
+    </section>
+  </main>
+</body>
+</html>

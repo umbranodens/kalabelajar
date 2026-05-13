@@ -56,7 +56,6 @@ func (h *AuthHandler) RegisterRoutes(router *gin.Engine) {
 	router.GET("/auth/google/callback", h.GoogleCallback)
 	router.POST("/logout", h.Logout)
 	router.GET("/pending", h.Pending)
-	router.GET("/dashboard", h.Dashboard)
 }
 
 func (h *AuthHandler) ShowLogin(c *gin.Context) {

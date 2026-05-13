@@ -27,9 +27,30 @@
       </form>
     </header>
     <section class="content-panel">
-      <h2>Ringkasan awal</h2>
-      <p class="muted">Fondasi dashboard sudah aktif. Data operasional akan muncul saat slice manajemen user, tutor, parent, dan murid disambungkan ke halaman ini.</p>
+      {{ if .IsSuperAdmin }}
+      <div class="admin-nav">
+        <a href="/admin/users">User</a>
+        <a href="/admin/tutors">Tutor</a>
+        <a href="/admin/students">Murid</a>
+        <a href="/admin/activity">Activity Log</a>
+      </div>
+      <h2>Ringkasan operasional</h2>
+      <div class="metrics-grid">
+        <a class="metric-card" href="/admin/tutors"><strong>{{ .TotalTutors }}</strong><span>Total Tutor</span></a>
+        <a class="metric-card" href="/admin/students"><strong>{{ .TotalStudents }}</strong><span>Total Murid</span></a>
+        <a class="metric-card" href="/admin/users?role=parent"><strong>{{ .TotalParents }}</strong><span>Total Parent</span></a>
+        <a class="metric-card" href="/admin/tutors?status=unverified"><strong>{{ .PendingTutors }}</strong><span>Pending Approval</span></a>
+      </div>
+      {{ if eq .ActivityCount 0 }}
       <div class="empty-state">Belum ada aktivitas terbaru.</div>
+      {{ else }}
+      <p class="muted">Ada {{ .ActivityCount }} aktivitas tercatat. Buka Activity Log untuk detail audit.</p>
+      {{ end }}
+      {{ else }}
+      <h2>Ringkasan awal</h2>
+      <p class="muted">Fondasi dashboard sudah aktif. Data operasional akan muncul sesuai role kamu.</p>
+      <div class="empty-state">Belum ada aktivitas terbaru.</div>
+      {{ end }}
     </section>
   </main>
 </body>
