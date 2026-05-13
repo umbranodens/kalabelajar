@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="id">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{{ .Title }}</title><link rel="stylesheet" href="/static/css/app.css"></head>
+<body class="dashboard-page">
+  <aside class="sidebar"><div class="brand-mark light">Kala Belajar</div><nav><a href="/dashboard">Dashboard</a><a href="/admin/users">User</a><a href="/admin/tutors">Tutor</a><a href="/admin/students">Murid</a><a href="/admin/schedules">Jadwal</a><a class="active" href="/admin/lesson-sessions">Sesi & Laporan</a><a href="/admin/activity">Activity Log</a></nav></aside>
+  <main class="dashboard-main">
+    <header class="topbar"><div><p class="eyebrow">Super Admin</p><h1>Laporan Sesi / Kehadiran</h1></div></header>
+    <section class="content-panel">
+      <form class="filter-bar" method="get"><select name="status"><option value="">Semua status</option><option value="scheduled">Terjadwal</option><option value="completed">Selesai</option><option value="canceled">Dibatalkan</option><option value="student_absent">Murid Tidak Hadir</option><option value="follow_up_required">Perlu Tindak Lanjut</option><option value="rescheduled">Dijadwalkan Ulang</option></select><button type="submit">Filter</button></form>
+      {{ if .Sessions }}
+      <div class="table-wrap"><table><thead><tr><th>Tanggal</th><th>Tutor</th><th>Murid</th><th>Subject</th><th>Status</th><th>Laporan</th><th>Detail</th></tr></thead><tbody>
+        {{ range .Sessions }}
+        <tr><td>{{ .DateLabel }}<br>{{ .TimeLabel }}</td><td>{{ .Tutor.User.Name }}</td><td>{{ .Student.Name }}</td><td>{{ .SubjectLabel }}</td><td>{{ .StatusLabel }}</td><td>{{ .NeedsReportLabel }}</td><td><a href="/admin/lesson-sessions/{{ .ID }}">Buka detail</a></td></tr>
+        {{ end }}
+      </tbody></table></div>
+      {{ else }}
+      <div class="empty-state">Laporan belum tersedia.</div>
+      {{ end }}
+    </section>
+  </main>
+</body>
+</html>

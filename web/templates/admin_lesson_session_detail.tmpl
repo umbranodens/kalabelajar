@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="id">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{{ .Title }}</title><link rel="stylesheet" href="/static/css/app.css"></head>
+<body class="dashboard-page">
+  <aside class="sidebar"><div class="brand-mark light">Kala Belajar</div><nav><a href="/dashboard">Dashboard</a><a class="active" href="/admin/lesson-sessions">Sesi & Laporan</a><a href="/admin/activity">Activity Log</a></nav></aside>
+  <main class="dashboard-main">
+    <header class="topbar"><div><p class="eyebrow">Super Admin</p><h1>Detail Laporan Sesi</h1></div><a href="/admin/lesson-sessions">Kembali</a></header>
+    <section class="content-panel">
+      <div class="detail-grid">
+        <div><p class="eyebrow">Tutor</p><h2>{{ .Session.Tutor.User.Name }}</h2></div>
+        <div><p class="eyebrow">Murid</p><h2>{{ .Session.Student.Name }}</h2></div>
+        <div><p class="eyebrow">Sesi</p><p>{{ .Session.DateLabel }} · {{ .Session.TimeLabel }} · {{ .Session.StatusLabel }}</p></div>
+        <div><p class="eyebrow">Subject</p><p>{{ .Session.SubjectLabel }}</p></div>
+      </div>
+      {{ if .Session.Report }}
+      <article class="report-body">
+        <p class="eyebrow">{{ .Session.Report.StatusLabel }}</p>
+        <h2>Materi</h2><p>{{ .Session.Report.MaterialSummary }}</p>
+        <h2>Progres</h2><p>{{ if .Session.Report.ProgressSummary }}{{ .Session.Report.ProgressSummary }}{{ else }}-{{ end }}</p>
+        <h2>PR / Tugas</h2><p>{{ if .Session.Report.Homework }}{{ .Session.Report.Homework }}{{ else }}-{{ end }}</p>
+        <h2>Kendala</h2><p>{{ if .Session.Report.IssueNotes }}{{ .Session.Report.IssueNotes }}{{ else }}-{{ end }}</p>
+        <h2>Saran Latihan</h2><p>{{ if .Session.Report.HomePracticeSuggestion }}{{ .Session.Report.HomePracticeSuggestion }}{{ else }}-{{ end }}</p>
+      </article>
+      {{ else }}
+      <div class="empty-state">Laporan belum tersedia.</div>
+      {{ end }}
+    </section>
+  </main>
+</body>
+</html>

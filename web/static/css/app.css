@@ -90,7 +90,8 @@ label {
 }
 
 input,
-select {
+select,
+textarea {
   width: 100%;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -100,7 +101,8 @@ select {
 }
 
 input:focus,
-select:focus {
+select:focus,
+textarea:focus {
   border-color: var(--primary-teal);
   outline: 3px solid rgba(0, 189, 168, 0.18);
 }
@@ -123,6 +125,15 @@ button.secondary {
   background: var(--white);
   color: var(--deep-blue);
   border: 1px solid var(--line);
+}
+
+.button-link {
+  background: var(--primary-teal);
+  border-radius: 8px;
+  color: var(--white);
+  display: inline-block;
+  padding: 10px 14px;
+  text-decoration: none;
 }
 
 .google-button {
@@ -316,6 +327,37 @@ a {
 
 .schedule-card p {
   margin: 8px 0;
+}
+
+.detail-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  margin-bottom: 20px;
+}
+
+.report-body h2 {
+  font-size: 18px;
+  margin: 18px 0 6px;
+}
+
+.report-body p {
+  margin: 0 0 10px;
+}
+
+.report-form {
+  display: grid;
+  gap: 16px;
+}
+
+.inline-check {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+}
+
+.inline-check input {
+  width: auto;
 }
 
 .table-wrap {

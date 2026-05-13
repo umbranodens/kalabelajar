@@ -1,5 +1,25 @@
 # Changelog
 
+## 2026-05-13 - Lesson sessions and reports
+
+### Added
+- Added `lesson_sessions` and `lesson_reports` models, migration registration, status labels, and local seed data for all session statuses.
+- Added lesson report service validation for status enum, tutor ownership, and required material summary for published reports.
+- Added Tutor `Riwayat Mengajar` and mobile-friendly `Isi Laporan` form.
+- Added Parent `Laporan Progres Anak` with published-only backend filtering and child filter.
+- Added Super Admin `Laporan Sesi / Kehadiran` monitoring and detail pages for published, draft, and missing-report sessions.
+- Added manual testing walkthrough for running and QA-ing the app locally.
+
+### Tested
+- Ran red `go test ./internal/services -run TestLessonReportService` before implementation.
+- Ran `go test ./...` successfully.
+- Ran `go run ./cmd/seed` successfully.
+- Browser-tested Super Admin all-status monitoring, completed filter, published detail, draft detail, completed-without-report state, Tutor report creation, Parent published-report visibility, Parent child filter, and mobile Tutor/Parent report pages.
+
+### Notes
+- Parent draft-report protection is enforced through backend query filtering on `published_at IS NOT NULL`.
+- Phase 5 UX polish remains open for broader visual refinement and empty/loading/toast polish.
+
 ## 2026-05-13 - Scheduling foundation
 
 ### Added

@@ -182,6 +182,64 @@ func (r *ScheduleRepository) SetScheduleActive(ctx context.Context, scheduleID u
 	return &schedule, nil
 }
 
+type LessonReportRepository struct {
+	db *gorm.DB
+}
+
+func NewLessonReportRepository(db *gorm.DB) *LessonReportRepository {
+	return &LessonReportRepository{db: db}
+}
+
+func (r *LessonReportRepository) FindLessonSessionForReport(ctx context.Context, id uuid.UUID) (*models.LessonSession, error) {
+	var session models.LessonSession
+	if err := r.db.WithContext(ctx).
+		Preload("Tutor.User").
+		Preload("Student.Parent").
+		Preload("Report").
+		First(&session, "id = ?", id).Error; err != nil {
+		return nil, fmt.Errorf("find lesson session for report: %w", err)
+	}
+	return &session, nil
+}
+
+func (r *LessonReportRepository) SaveLessonReport(ctx context.Context, report *models.LessonReport, status string) (*models.LessonReport, error) {
+	if err := r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		if err := tx.Model(&models.LessonSession{}).Where("id = ?", report.LessonSessionID).Update("status", status).Error; err != nil {
+			return err
+		}
+		var existing models.LessonReport
+		err := tx.Where("lesson_session_id = ?", report.LessonSessionID).First(&existing).Error
+		if err == nil {
+			report.ID = existing.ID
+			report.CreatedAt = existing.CreatedAt
+			return tx.Model(&existing).Updates(map[string]any{
+				"tutor_id":                 report.TutorID,
+				"student_id":               report.StudentID,
+				"material_summary":         report.MaterialSummary,
+				"progress_summary":         report.ProgressSummary,
+				"homework":                 report.Homework,
+				"issue_notes":              report.IssueNotes,
+				"home_practice_suggestion": report.HomePracticeSuggestion,
+				"published_at":             report.PublishedAt,
+			}).Error
+		}
+		if err != gorm.ErrRecordNotFound {
+			return err
+		}
+		return tx.Create(report).Error
+	}); err != nil {
+		return nil, fmt.Errorf("save lesson report: %w", err)
+	}
+	if err := r.db.WithContext(ctx).
+		Preload("LessonSession").
+		Preload("Tutor.User").
+		Preload("Student.Parent").
+		First(report, "lesson_session_id = ?", report.LessonSessionID).Error; err != nil {
+		return nil, fmt.Errorf("reload lesson report: %w", err)
+	}
+	return report, nil
+}
+
 type ActivityLogRepository struct {
 	db *gorm.DB
 }

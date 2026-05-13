@@ -72,7 +72,11 @@ func main() {
 		repositories.NewScheduleRepository(db),
 		repositories.NewActivityLogRepository(db),
 	)
-	handlers.NewAdminHandler(db, adminService, assignmentService, scheduleService).RegisterRoutes(router)
+	reportService := services.NewLessonReportService(
+		repositories.NewLessonReportRepository(db),
+		repositories.NewActivityLogRepository(db),
+	)
+	handlers.NewAdminHandler(db, adminService, assignmentService, scheduleService, reportService).RegisterRoutes(router)
 
 	if err := router.Run(":" + cfg.App.Port); err != nil {
 		log.Fatalf("start server: %v", err)

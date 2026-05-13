@@ -3,7 +3,9 @@ package seed
 import (
 	"context"
 	"fmt"
+	"time"
 
+	"github.com/google/uuid"
 	"github.com/umbranodens/kalabelajar/internal/models"
 	"github.com/umbranodens/kalabelajar/internal/services"
 	"gorm.io/gorm"
@@ -61,7 +63,7 @@ func LocalDevelopmentData(ctx context.Context, db *gorm.DB) error {
 		}
 	}
 
-	if err := firstOrCreateSchedule(ctx, db, models.Schedule{
+	mathSchedule, err := firstOrCreateSchedule(ctx, db, models.Schedule{
 		TutorID:   mathTutor.ID,
 		StudentID: students[0].ID,
 		Subject:   stringPtr("Matematika"),
@@ -70,10 +72,11 @@ func LocalDevelopmentData(ctx context.Context, db *gorm.DB) error {
 		EndTime:   "16:30",
 		Location:  stringPtr("Rumah Alya"),
 		IsActive:  true,
-	}); err != nil {
+	})
+	if err != nil {
 		return err
 	}
-	if err := firstOrCreateSchedule(ctx, db, models.Schedule{
+	englishSchedule, err := firstOrCreateSchedule(ctx, db, models.Schedule{
 		TutorID:   englishTutor.ID,
 		StudentID: students[1].ID,
 		Subject:   stringPtr("Bahasa Inggris"),
@@ -82,10 +85,11 @@ func LocalDevelopmentData(ctx context.Context, db *gorm.DB) error {
 		EndTime:   "19:30",
 		Location:  stringPtr("Online"),
 		IsActive:  true,
-	}); err != nil {
+	})
+	if err != nil {
 		return err
 	}
-	if err := firstOrCreateSchedule(ctx, db, models.Schedule{
+	if _, err := firstOrCreateSchedule(ctx, db, models.Schedule{
 		TutorID:   mathTutor.ID,
 		StudentID: students[0].ID,
 		Subject:   stringPtr("Matematika"),
@@ -95,6 +99,10 @@ func LocalDevelopmentData(ctx context.Context, db *gorm.DB) error {
 		Location:  stringPtr("Rumah Alya"),
 		IsActive:  false,
 	}); err != nil {
+		return err
+	}
+
+	if err := seedLessonSessionsAndReports(ctx, db, mathTutor, englishTutor, &students[0], &students[1], mathSchedule, englishSchedule); err != nil {
 		return err
 	}
 
@@ -156,7 +164,7 @@ func firstOrCreateStudent(ctx context.Context, db *gorm.DB, student *models.Stud
 	return db.WithContext(ctx).Create(student).Error
 }
 
-func firstOrCreateSchedule(ctx context.Context, db *gorm.DB, schedule models.Schedule) error {
+func firstOrCreateSchedule(ctx context.Context, db *gorm.DB, schedule models.Schedule) (*models.Schedule, error) {
 	var existing models.Schedule
 	err := db.WithContext(ctx).
 		Where("tutor_id = ? AND student_id = ? AND day_of_week = ? AND start_time = ?", schedule.TutorID, schedule.StudentID, schedule.DayOfWeek, schedule.StartTime).
@@ -168,12 +176,143 @@ func firstOrCreateSchedule(ctx context.Context, db *gorm.DB, schedule models.Sch
 			"location":  schedule.Location,
 			"is_active": schedule.IsActive,
 		}
-		return db.WithContext(ctx).Model(&existing).Updates(updates).Error
+		if err := db.WithContext(ctx).Model(&existing).Updates(updates).Error; err != nil {
+			return nil, err
+		}
+		existing.Subject = schedule.Subject
+		existing.EndTime = schedule.EndTime
+		existing.Location = schedule.Location
+		existing.IsActive = schedule.IsActive
+		return &existing, nil
+	}
+	if err != gorm.ErrRecordNotFound {
+		return nil, err
+	}
+	return &schedule, db.WithContext(ctx).Create(&schedule).Error
+}
+
+func seedLessonSessionsAndReports(ctx context.Context, db *gorm.DB, mathTutor *models.Tutor, englishTutor *models.Tutor, alya *models.Student, bima *models.Student, mathSchedule *models.Schedule, englishSchedule *models.Schedule) error {
+	base := time.Date(2026, 5, 11, 0, 0, 0, 0, time.UTC)
+	sessions := []models.LessonSession{
+		lessonSession(mathSchedule, mathTutor.ID, alya.ID, "Matematika", base.Add(15*time.Hour), base.Add(16*time.Hour+30*time.Minute), models.LessonSessionCompleted, "Rumah Alya"),
+		lessonSession(mathSchedule, mathTutor.ID, alya.ID, "Matematika", base.AddDate(0, 0, 1).Add(15*time.Hour), base.AddDate(0, 0, 1).Add(16*time.Hour+30*time.Minute), models.LessonSessionScheduled, "Rumah Alya"),
+		lessonSession(mathSchedule, mathTutor.ID, alya.ID, "Matematika", base.AddDate(0, 0, 2).Add(15*time.Hour), base.AddDate(0, 0, 2).Add(16*time.Hour+30*time.Minute), models.LessonSessionCanceled, "Rumah Alya"),
+		lessonSession(englishSchedule, englishTutor.ID, bima.ID, "Bahasa Inggris", base.AddDate(0, 0, 3).Add(18*time.Hour), base.AddDate(0, 0, 3).Add(19*time.Hour+30*time.Minute), models.LessonSessionStudentAbsent, "Online"),
+		lessonSession(englishSchedule, englishTutor.ID, bima.ID, "Bahasa Inggris", base.AddDate(0, 0, 4).Add(18*time.Hour), base.AddDate(0, 0, 4).Add(19*time.Hour+30*time.Minute), models.LessonSessionFollowUpRequired, "Online"),
+		lessonSession(mathSchedule, mathTutor.ID, alya.ID, "Matematika", base.AddDate(0, 0, 5).Add(10*time.Hour), base.AddDate(0, 0, 5).Add(11*time.Hour), models.LessonSessionRescheduled, "Rumah Alya"),
+		lessonSession(mathSchedule, mathTutor.ID, alya.ID, "Matematika", base.AddDate(0, 0, 6).Add(15*time.Hour), base.AddDate(0, 0, 6).Add(16*time.Hour+30*time.Minute), models.LessonSessionCompleted, "Rumah Alya"),
+	}
+	for i := range sessions {
+		created, err := firstOrCreateLessonSession(ctx, db, &sessions[i])
+		if err != nil {
+			return err
+		}
+		sessions[i].ID = created.ID
+	}
+	publishedAt := base.AddDate(0, 0, 1)
+	if err := firstOrCreateLessonReport(ctx, db, models.LessonReport{
+		LessonSessionID:        sessions[0].ID,
+		TutorID:                mathTutor.ID,
+		StudentID:              alya.ID,
+		MaterialSummary:        "Pecahan campuran dan penyederhanaan.",
+		ProgressSummary:        stringPtr("Alya makin percaya diri menyelesaikan soal bertahap."),
+		Homework:               stringPtr("Latihan 5 soal pecahan."),
+		IssueNotes:             stringPtr("Masih perlu pelan-pelan saat pembagian."),
+		HomePracticeSuggestion: stringPtr("Review 15 menit sebelum sesi berikutnya."),
+		PublishedAt:            &publishedAt,
+	}); err != nil {
+		return err
+	}
+	if err := firstOrCreateLessonReport(ctx, db, models.LessonReport{
+		LessonSessionID:        sessions[2].ID,
+		TutorID:                mathTutor.ID,
+		StudentID:              alya.ID,
+		MaterialSummary:        "Sesi batal karena jadwal keluarga.",
+		ProgressSummary:        stringPtr("Belum ada progres baru."),
+		IssueNotes:             stringPtr("Perlu jadwal pengganti."),
+		HomePracticeSuggestion: stringPtr("Kerjakan ulang catatan pekan lalu."),
+	}); err != nil {
+		return err
+	}
+	if err := firstOrCreateLessonReport(ctx, db, models.LessonReport{
+		LessonSessionID:        sessions[4].ID,
+		TutorID:                englishTutor.ID,
+		StudentID:              bima.ID,
+		MaterialSummary:        "Reading comprehension dan vocabulary.",
+		ProgressSummary:        stringPtr("Bima memahami ide utama, tetapi perlu latihan kosakata."),
+		Homework:               stringPtr("Baca satu artikel pendek."),
+		IssueNotes:             stringPtr("Perlu tindak lanjut pronunciation."),
+		HomePracticeSuggestion: stringPtr("Latihan membaca nyaring 10 menit."),
+		PublishedAt:            &publishedAt,
+	}); err != nil {
+		return err
+	}
+	if err := deleteLessonReport(ctx, db, sessions[6].ID); err != nil {
+		return err
+	}
+	return nil
+}
+
+func lessonSession(schedule *models.Schedule, tutorID uuid.UUID, studentID uuid.UUID, subject string, startAt time.Time, endAt time.Time, status string, location string) models.LessonSession {
+	return models.LessonSession{
+		ScheduleID:       &schedule.ID,
+		TutorID:          tutorID,
+		StudentID:        studentID,
+		Subject:          stringPtr(subject),
+		ScheduledStartAt: startAt,
+		ScheduledEndAt:   endAt,
+		Status:           status,
+		Location:         stringPtr(location),
+	}
+}
+
+func firstOrCreateLessonSession(ctx context.Context, db *gorm.DB, session *models.LessonSession) (*models.LessonSession, error) {
+	var existing models.LessonSession
+	err := db.WithContext(ctx).
+		Where("tutor_id = ? AND student_id = ? AND scheduled_start_at = ?", session.TutorID, session.StudentID, session.ScheduledStartAt).
+		First(&existing).Error
+	if err == nil {
+		updates := map[string]any{
+			"schedule_id":      session.ScheduleID,
+			"subject":          session.Subject,
+			"scheduled_end_at": session.ScheduledEndAt,
+			"status":           session.Status,
+			"location":         session.Location,
+		}
+		if err := db.WithContext(ctx).Model(&existing).Updates(updates).Error; err != nil {
+			return nil, err
+		}
+		return &existing, nil
+	}
+	if err != gorm.ErrRecordNotFound {
+		return nil, err
+	}
+	return session, db.WithContext(ctx).Create(session).Error
+}
+
+func firstOrCreateLessonReport(ctx context.Context, db *gorm.DB, report models.LessonReport) error {
+	var existing models.LessonReport
+	err := db.WithContext(ctx).Where("lesson_session_id = ?", report.LessonSessionID).First(&existing).Error
+	if err == nil {
+		return db.WithContext(ctx).Model(&existing).Updates(map[string]any{
+			"tutor_id":                 report.TutorID,
+			"student_id":               report.StudentID,
+			"material_summary":         report.MaterialSummary,
+			"progress_summary":         report.ProgressSummary,
+			"homework":                 report.Homework,
+			"issue_notes":              report.IssueNotes,
+			"home_practice_suggestion": report.HomePracticeSuggestion,
+			"published_at":             report.PublishedAt,
+		}).Error
 	}
 	if err != gorm.ErrRecordNotFound {
 		return err
 	}
-	return db.WithContext(ctx).Create(&schedule).Error
+	return db.WithContext(ctx).Create(&report).Error
+}
+
+func deleteLessonReport(ctx context.Context, db *gorm.DB, lessonSessionID uuid.UUID) error {
+	return db.WithContext(ctx).Where("lesson_session_id = ?", lessonSessionID).Delete(&models.LessonReport{}).Error
 }
 
 func stringPtr(value string) *string {

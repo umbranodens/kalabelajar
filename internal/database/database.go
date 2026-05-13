@@ -66,6 +66,8 @@ func MigrationModels() []any {
 		&models.Tutor{},
 		&models.Student{},
 		&models.Schedule{},
+		&models.LessonSession{},
+		&models.LessonReport{},
 		&models.Session{},
 		&models.ActivityLog{},
 	}

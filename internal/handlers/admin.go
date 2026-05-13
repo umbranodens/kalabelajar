@@ -17,10 +17,11 @@ type AdminHandler struct {
 	admin      *services.AdminService
 	assignment *services.AssignmentService
 	schedules  *services.ScheduleService
+	reports    *services.LessonReportService
 }
 
-func NewAdminHandler(db *gorm.DB, admin *services.AdminService, assignment *services.AssignmentService, schedules *services.ScheduleService) *AdminHandler {
-	return &AdminHandler{db: db, admin: admin, assignment: assignment, schedules: schedules}
+func NewAdminHandler(db *gorm.DB, admin *services.AdminService, assignment *services.AssignmentService, schedules *services.ScheduleService, reports *services.LessonReportService) *AdminHandler {
+	return &AdminHandler{db: db, admin: admin, assignment: assignment, schedules: schedules, reports: reports}
 }
 
 func (h *AdminHandler) RegisterRoutes(router *gin.Engine) {
@@ -35,9 +36,15 @@ func (h *AdminHandler) RegisterRoutes(router *gin.Engine) {
 	admin.GET("/schedules", h.AdminSchedules)
 	admin.POST("/schedules", h.CreateSchedule)
 	admin.POST("/schedules/:id/active", h.SetScheduleActive)
+	admin.GET("/lesson-sessions", h.AdminLessonSessions)
+	admin.GET("/lesson-sessions/:id", h.AdminLessonSessionDetail)
 	admin.GET("/activity", h.Activity)
 	router.GET("/tutor/schedules", middleware.RequireRoles(models.RoleIDTutor), h.TutorSchedules)
+	router.GET("/tutor/sessions", middleware.RequireRoles(models.RoleIDTutor), h.TutorSessions)
+	router.GET("/tutor/sessions/:id/report", middleware.RequireRoles(models.RoleIDTutor), h.TutorReportForm)
+	router.POST("/tutor/sessions/:id/report", middleware.RequireRoles(models.RoleIDTutor), h.SaveTutorReport)
 	router.GET("/parent/schedules", middleware.RequireRoles(models.RoleIDParent), h.ParentSchedules)
+	router.GET("/parent/reports", middleware.RequireRoles(models.RoleIDParent), h.ParentReports)
 }
 
 func (h *AdminHandler) Dashboard(c *gin.Context) {
@@ -292,4 +299,125 @@ func (h *AdminHandler) Activity(c *gin.Context) {
 	}
 	query.Find(&logs)
 	c.HTML(http.StatusOK, "admin_activity.tmpl", gin.H{"Title": "Activity Log", "Logs": logs, "Query": c.Request.URL.Query()})
+}
+
+func (h *AdminHandler) AdminLessonSessions(c *gin.Context) {
+	var sessions []models.LessonSession
+	query := h.db.Preload("Tutor.User").Preload("Student.Parent").Preload("Report").Order("scheduled_start_at desc")
+	if status := c.Query("status"); status != "" {
+		query = query.Where("status = ?", status)
+	}
+	query.Find(&sessions)
+	c.HTML(http.StatusOK, "admin_lesson_sessions.tmpl", gin.H{"Title": "Laporan Sesi / Kehadiran", "Sessions": sessions, "Query": c.Request.URL.Query()})
+}
+
+func (h *AdminHandler) AdminLessonSessionDetail(c *gin.Context) {
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		c.Redirect(http.StatusFound, "/admin/lesson-sessions")
+		return
+	}
+	var session models.LessonSession
+	if err := h.db.Preload("Tutor.User").Preload("Student.Parent").Preload("Report").First(&session, "id = ?", id).Error; err != nil {
+		c.Redirect(http.StatusFound, "/admin/lesson-sessions")
+		return
+	}
+	c.HTML(http.StatusOK, "admin_lesson_session_detail.tmpl", gin.H{"Title": "Detail Laporan Sesi", "Session": session})
+}
+
+func (h *AdminHandler) TutorSessions(c *gin.Context) {
+	user, _ := middleware.CurrentUser(c)
+	tutor, err := h.currentTutor(user.ID)
+	if err != nil {
+		c.HTML(http.StatusOK, "tutor_sessions.tmpl", gin.H{"Title": "Riwayat Mengajar", "User": user, "Sessions": []models.LessonSession{}})
+		return
+	}
+	var sessions []models.LessonSession
+	h.db.Preload("Student.Parent").
+		Preload("Report").
+		Where("tutor_id = ?", tutor.ID).
+		Order("scheduled_start_at desc").
+		Find(&sessions)
+	c.HTML(http.StatusOK, "tutor_sessions.tmpl", gin.H{"Title": "Riwayat Mengajar", "User": user, "Sessions": sessions})
+}
+
+func (h *AdminHandler) TutorReportForm(c *gin.Context) {
+	user, _ := middleware.CurrentUser(c)
+	h.renderTutorReportForm(c, user, http.StatusOK, "")
+}
+
+func (h *AdminHandler) SaveTutorReport(c *gin.Context) {
+	user, _ := middleware.CurrentUser(c)
+	tutor, err := h.currentTutor(user.ID)
+	if err != nil {
+		c.Redirect(http.StatusFound, "/dashboard")
+		return
+	}
+	sessionID, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		c.Redirect(http.StatusFound, "/tutor/sessions")
+		return
+	}
+	publish := c.PostForm("publish") == "on"
+	_, err = h.reports.SaveReport(c.Request.Context(), services.SaveLessonReportInput{
+		ActorUserID:            user.ID,
+		LessonSessionID:        sessionID,
+		TutorID:                tutor.ID,
+		Status:                 c.PostForm("status"),
+		MaterialSummary:        c.PostForm("material_summary"),
+		ProgressSummary:        c.PostForm("progress_summary"),
+		Homework:               c.PostForm("homework"),
+		IssueNotes:             c.PostForm("issue_notes"),
+		HomePracticeSuggestion: c.PostForm("home_practice_suggestion"),
+		Publish:                publish,
+		IPAddress:              c.ClientIP(),
+	})
+	if err != nil {
+		h.renderTutorReportForm(c, user, http.StatusBadRequest, "Laporan belum bisa disimpan. Untuk publish, materi wajib diisi dan sesi harus milik Tutor yang sedang login.")
+		return
+	}
+	c.Redirect(http.StatusFound, "/tutor/sessions")
+}
+
+func (h *AdminHandler) ParentReports(c *gin.Context) {
+	user, _ := middleware.CurrentUser(c)
+	var reports []models.LessonReport
+	query := h.db.Preload("LessonSession").Preload("Tutor.User").Preload("Student.Parent").
+		Joins("JOIN students ON students.id = lesson_reports.student_id").
+		Where("students.parent_id = ? AND lesson_reports.published_at IS NOT NULL", user.ID).
+		Order("lesson_reports.published_at desc")
+	if studentID := c.Query("student_id"); studentID != "" {
+		query = query.Where("lesson_reports.student_id = ?", studentID)
+	}
+	query.Find(&reports)
+	var students []models.Student
+	h.db.Where("parent_id = ?", user.ID).Order("name asc").Find(&students)
+	c.HTML(http.StatusOK, "parent_reports.tmpl", gin.H{"Title": "Laporan Progres Anak", "User": user, "Reports": reports, "Students": students, "Query": c.Request.URL.Query()})
+}
+
+func (h *AdminHandler) renderTutorReportForm(c *gin.Context, user *models.User, status int, errorMessage string) {
+	tutor, err := h.currentTutor(user.ID)
+	if err != nil {
+		c.Redirect(http.StatusFound, "/dashboard")
+		return
+	}
+	sessionID, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		c.Redirect(http.StatusFound, "/tutor/sessions")
+		return
+	}
+	var session models.LessonSession
+	if err := h.db.Preload("Student.Parent").Preload("Report").First(&session, "id = ? AND tutor_id = ?", sessionID, tutor.ID).Error; err != nil {
+		c.Redirect(http.StatusFound, "/tutor/sessions")
+		return
+	}
+	c.HTML(status, "tutor_report_form.tmpl", gin.H{"Title": "Isi Laporan", "User": user, "Session": session, "Error": errorMessage})
+}
+
+func (h *AdminHandler) currentTutor(userID uuid.UUID) (*models.Tutor, error) {
+	var tutor models.Tutor
+	if err := h.db.Preload("User").First(&tutor, "user_id = ?", userID).Error; err != nil {
+		return nil, err
+	}
+	return &tutor, nil
 }

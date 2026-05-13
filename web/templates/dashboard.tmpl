@@ -33,6 +33,7 @@
         <a href="/admin/tutors">Tutor</a>
         <a href="/admin/students">Murid</a>
         <a href="/admin/schedules">Jadwal</a>
+        <a href="/admin/lesson-sessions">Sesi & Laporan</a>
         <a href="/admin/activity">Activity Log</a>
       </div>
       <h2>Ringkasan operasional</h2>
@@ -55,13 +56,15 @@
         <a class="metric-card" href="/tutor/schedules"><strong>{{ .ScheduleCount }}</strong><span>Jadwal Aktif</span></a>
         <div class="metric-card"><strong>{{ .StudentCount }}</strong><span>Murid Aktif</span></div>
       </div>
-      <p class="muted">Buka Jadwal Saya untuk melihat murid, jam, lokasi, dan status jadwal.</p>
+      <div class="admin-nav"><a href="/tutor/schedules">Jadwal Saya</a><a href="/tutor/sessions">Riwayat Mengajar</a></div>
+      <p class="muted">Buka Riwayat Mengajar untuk mengisi laporan sesi.</p>
       {{ else if .IsParent }}
       <h2>Ringkasan Anak</h2>
       <div class="metrics-grid">
         <a class="metric-card" href="/parent/schedules"><strong>{{ .ScheduleCount }}</strong><span>Jadwal Anak</span></a>
         <div class="metric-card"><strong>{{ .ChildCount }}</strong><span>Anak Terdaftar</span></div>
       </div>
+      <div class="admin-nav"><a href="/parent/schedules">Jadwal Anak</a><a href="/parent/reports">Laporan Progres</a></div>
       <p class="muted">Jadwal nonaktif tidak ditampilkan di ringkasan Parent.</p>
       {{ else }}
       <h2>Ringkasan awal</h2>
