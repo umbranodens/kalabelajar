@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-05-13 - Super Admin sidebar fixes
+
+### Fixed
+- Standardized the Super Admin sidebar brand markup on admin pages, including `/admin/students`.
+- Added the sidebar logout action to all Super Admin admin pages.
+
+### Tested
+- Ran `go test ./...` successfully.
+- Verified every `web/templates/admin_*.html` file has one sidebar brand label and one logout form.
+
 ## 2026-05-13 - UX polish
 
 ### Added

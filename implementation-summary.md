@@ -1,5 +1,18 @@
 # Implementation Summary
 
+## 2026-05-13 20:31 - Super Admin sidebar fixes
+
+- Branch: `master`
+- Commit: pending before commit; final pushed hash reported after Git creates it
+- Pushed: pending
+- Implemented: Standardized Super Admin sidebar brand markup across admin templates and added logout action to all Super Admin admin sidebars.
+- Files changed: `web/templates/admin_activity.html`, `web/templates/admin_lesson_sessions.html`, `web/templates/admin_lesson_session_detail.html`, `web/templates/admin_schedules.html`, `web/templates/admin_students.html`, `web/templates/admin_tutors.html`, `web/templates/admin_users.html`, `CHANGELOG.md`, `implementation-summary.md`.
+- Automated tests: `go test ./...` passed.
+- Browser/manual tests: Browser UI was intentionally skipped per request. Startup health check passed after seeding, and port 8080 was closed afterward.
+- Verified test cases: Super Admin sidebar consistency regression for `/admin/students` and admin-page logout availability.
+- Known issues: None for this slice.
+- Next steps: Continue with Tailwind compliance cleanup.
+
 ## 2026-05-13 16:24 - UX polish
 
 - Branch: `master`
