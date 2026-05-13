@@ -1,5 +1,19 @@
 # Changelog
 
+## 2026-05-13 - Tutor self-service report flow
+
+### Added
+- Added Tutor self-service report creation from assigned students without requiring an admin-created lesson session first.
+- Added `/tutor/report/create` route, sidebar/dashboard entry points, and a mobile-friendly create report form.
+- Added repository/service support for creating a lesson session and its report together with tutor ownership validation.
+
+### Changed
+- Updated Tutor dashboard copy and navigation so tutors can create reports directly.
+
+### Tested
+- Ran `go test ./...` successfully.
+- Ran startup health check successfully on a temporary port.
+
 ## 2026-05-13 - Admin sidebar icon consistency
 
 ### Fixed

@@ -3,6 +3,7 @@ package handlers
 import (
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -43,6 +44,8 @@ func (h *AdminHandler) RegisterRoutes(router *gin.Engine) {
 	router.GET("/tutor/sessions", middleware.RequireRoles(models.RoleIDTutor), h.TutorSessions)
 	router.GET("/tutor/sessions/:id/report", middleware.RequireRoles(models.RoleIDTutor), h.TutorReportForm)
 	router.POST("/tutor/sessions/:id/report", middleware.RequireRoles(models.RoleIDTutor), h.SaveTutorReport)
+	router.GET("/tutor/report/create", middleware.RequireRoles(models.RoleIDTutor), h.TutorCreateReportForm)
+	router.POST("/tutor/report/create", middleware.RequireRoles(models.RoleIDTutor), h.TutorCreateReport)
 	router.GET("/parent/schedules", middleware.RequireRoles(models.RoleIDParent), h.ParentSchedules)
 	router.GET("/parent/reports", middleware.RequireRoles(models.RoleIDParent), h.ParentReports)
 }
@@ -412,6 +415,75 @@ func (h *AdminHandler) renderTutorReportForm(c *gin.Context, user *models.User, 
 		return
 	}
 	c.HTML(status, "tutor_report_form.html", gin.H{"Title": "Isi Laporan", "User": user, "Session": session, "Error": errorMessage})
+}
+
+func (h *AdminHandler) TutorCreateReportForm(c *gin.Context) {
+	user, _ := middleware.CurrentUser(c)
+	tutor, err := h.currentTutor(user.ID)
+	if err != nil {
+		c.Redirect(http.StatusFound, "/dashboard")
+		return
+	}
+	var students []models.Student
+	h.db.Where("assigned_tutor_id = ?", tutor.ID).Order("name asc").Find(&students)
+	today := time.Now().Format("2006-01-02")
+	c.HTML(http.StatusOK, "tutor_create_report.html", gin.H{
+		"Title":    "Buat Laporan",
+		"User":     user,
+		"Students": students,
+		"Today":    today,
+	})
+}
+
+func (h *AdminHandler) TutorCreateReport(c *gin.Context) {
+	user, _ := middleware.CurrentUser(c)
+	tutor, err := h.currentTutor(user.ID)
+	if err != nil {
+		c.Redirect(http.StatusFound, "/dashboard")
+		return
+	}
+	studentID, err := uuid.Parse(c.PostForm("student_id"))
+	if err != nil {
+		h.renderTutorCreateReportForm(c, user, tutor, http.StatusBadRequest, "Murid wajib dipilih.")
+		return
+	}
+	publish := c.PostForm("publish") == "on"
+	_, err = h.reports.CreateReportWithSession(c.Request.Context(), services.CreateReportWithSessionInput{
+		ActorUserID:            user.ID,
+		TutorID:                tutor.ID,
+		StudentID:              studentID,
+		Subject:                c.PostForm("subject"),
+		Date:                   c.PostForm("date"),
+		StartTime:              c.PostForm("start_time"),
+		EndTime:                c.PostForm("end_time"),
+		Location:               c.PostForm("location"),
+		Status:                 c.PostForm("status"),
+		MaterialSummary:        c.PostForm("material_summary"),
+		ProgressSummary:        c.PostForm("progress_summary"),
+		Homework:               c.PostForm("homework"),
+		IssueNotes:             c.PostForm("issue_notes"),
+		HomePracticeSuggestion: c.PostForm("home_practice_suggestion"),
+		Publish:                publish,
+		IPAddress:              c.ClientIP(),
+	})
+	if err != nil {
+		h.renderTutorCreateReportForm(c, user, tutor, http.StatusBadRequest, "Laporan belum bisa disimpan. Pastikan murid terdaftar, tanggal valid, dan jam selesai setelah jam mulai. Untuk publish, materi wajib diisi.")
+		return
+	}
+	c.Redirect(http.StatusFound, "/tutor/sessions")
+}
+
+func (h *AdminHandler) renderTutorCreateReportForm(c *gin.Context, user *models.User, tutor *models.Tutor, status int, errorMessage string) {
+	var students []models.Student
+	h.db.Where("assigned_tutor_id = ?", tutor.ID).Order("name asc").Find(&students)
+	today := time.Now().Format("2006-01-02")
+	c.HTML(status, "tutor_create_report.html", gin.H{
+		"Title":    "Buat Laporan",
+		"User":     user,
+		"Students": students,
+		"Today":    today,
+		"Error":    errorMessage,
+	})
 }
 
 func (h *AdminHandler) currentTutor(userID uuid.UUID) (*models.Tutor, error) {

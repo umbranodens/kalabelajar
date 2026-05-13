@@ -119,6 +119,18 @@ func (r *StudentRepository) FindStudentForSchedule(ctx context.Context, id uuid.
 	return &student, nil
 }
 
+func (r *StudentRepository) FindStudentsByTutorID(ctx context.Context, tutorID uuid.UUID) ([]models.Student, error) {
+	var students []models.Student
+	if err := r.db.WithContext(ctx).
+		Preload("Parent").
+		Where("assigned_tutor_id = ?", tutorID).
+		Order("name asc").
+		Find(&students).Error; err != nil {
+		return nil, fmt.Errorf("find students by tutor id: %w", err)
+	}
+	return students, nil
+}
+
 func (r *StudentRepository) UpdateAssignedTutor(ctx context.Context, studentID uuid.UUID, tutorID uuid.UUID) (*models.Student, error) {
 	var student models.Student
 	if err := r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
@@ -235,6 +247,39 @@ func (r *LessonReportRepository) SaveLessonReport(ctx context.Context, report *m
 		Preload("Tutor.User").
 		Preload("Student.Parent").
 		First(report, "lesson_session_id = ?", report.LessonSessionID).Error; err != nil {
+		return nil, fmt.Errorf("reload lesson report: %w", err)
+	}
+	return report, nil
+}
+
+func (r *LessonReportRepository) FindStudentByIDForTutor(ctx context.Context, studentID uuid.UUID, tutorID uuid.UUID) (*models.Student, error) {
+	var student models.Student
+	if err := r.db.WithContext(ctx).
+		Preload("Parent").
+		First(&student, "id = ? AND assigned_tutor_id = ?", studentID, tutorID).Error; err != nil {
+		return nil, fmt.Errorf("find student by id for tutor: %w", err)
+	}
+	return &student, nil
+}
+
+func (r *LessonReportRepository) CreateLessonSessionAndReport(ctx context.Context, session *models.LessonSession, report *models.LessonReport) (*models.LessonReport, error) {
+	if err := r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		if err := tx.Create(session).Error; err != nil {
+			return fmt.Errorf("create lesson session: %w", err)
+		}
+		report.LessonSessionID = session.ID
+		if err := tx.Create(report).Error; err != nil {
+			return fmt.Errorf("create lesson report: %w", err)
+		}
+		return nil
+	}); err != nil {
+		return nil, fmt.Errorf("create session and report: %w", err)
+	}
+	if err := r.db.WithContext(ctx).
+		Preload("LessonSession").
+		Preload("Tutor.User").
+		Preload("Student.Parent").
+		First(report, "id = ?", report.ID).Error; err != nil {
 		return nil, fmt.Errorf("reload lesson report: %w", err)
 	}
 	return report, nil

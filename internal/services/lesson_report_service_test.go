@@ -98,3 +98,16 @@ func (r *fakeLessonReportRepository) SaveLessonReport(ctx context.Context, repor
 	r.report = *report
 	return report, nil
 }
+
+func (r *fakeLessonReportRepository) FindStudentByIDForTutor(ctx context.Context, studentID uuid.UUID, tutorID uuid.UUID) (*models.Student, error) {
+	return &models.Student{ID: studentID, AssignedTutorID: &tutorID}, nil
+}
+
+func (r *fakeLessonReportRepository) CreateLessonSessionAndReport(ctx context.Context, session *models.LessonSession, report *models.LessonReport) (*models.LessonReport, error) {
+	session.ID = uuid.New()
+	report.ID = uuid.New()
+	report.LessonSessionID = session.ID
+	report.CreatedAt = time.Now()
+	r.report = *report
+	return report, nil
+}
