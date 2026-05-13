@@ -10,6 +10,7 @@ import (
 	"github.com/umbranodens/kalabelajar/internal/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 func BuildDSN(cfg config.DatabaseConfig) string {
@@ -25,7 +26,9 @@ func BuildDSN(cfg config.DatabaseConfig) string {
 }
 
 func Connect(cfg config.DatabaseConfig) (*gorm.DB, error) {
-	db, err := gorm.Open(postgres.Open(BuildDSN(cfg)), &gorm.Config{})
+	db, err := gorm.Open(postgres.Open(BuildDSN(cfg)), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Warn),
+	})
 	if err != nil {
 		return nil, fmt.Errorf("open database connection: %w", err)
 	}
@@ -55,6 +58,7 @@ func MigrationModels() []any {
 		&models.User{},
 		&models.Tutor{},
 		&models.Student{},
+		&models.Session{},
 		&models.ActivityLog{},
 	}
 }

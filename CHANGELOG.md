@@ -1,5 +1,30 @@
 # Changelog
 
+## 2026-05-13 - Local auth foundation
+
+### Added
+- Added auth `sessions` model and migration registration.
+- Added bcrypt password hashing and local email-password register/login service.
+- Added server-side session creation and lookup through the `kb_session` cookie.
+- Added role and Super Admin seed service with default local account `admin@kalabelajar.com`.
+- Added seed command execution for roles and Super Admin.
+- Added server-rendered login, register, pending-role, and dashboard pages in Bahasa Indonesia.
+- Added minimal responsive Kala Belajar styling with brand colors and fonts.
+
+### Changed
+- Server startup now runs migrations, seeds roles/Super Admin, loads templates, and registers auth routes.
+- Database logging now suppresses expected record-not-found noise.
+
+### Tested
+- Ran `go test ./...` successfully.
+- Ran `go run ./cmd/seed` successfully.
+- Started the local server and verified `/login`, local admin login, `/dashboard`, register success, duplicate email validation, password confirmation validation, and wrong-password login validation via HTTP.
+- Verified the local admin login flow in the in-app browser.
+
+### Notes
+- Google SSO is still pending and should be the next auth slice.
+- Email fields use `type="text"` with `inputmode="email"` because server-side validation owns the email rule and this keeps local browser automation compatible.
+
 ## 2026-05-13 - Core data foundation
 
 ### Added

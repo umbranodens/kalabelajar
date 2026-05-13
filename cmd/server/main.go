@@ -8,6 +8,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/umbranodens/kalabelajar/internal/config"
 	"github.com/umbranodens/kalabelajar/internal/database"
+	"github.com/umbranodens/kalabelajar/internal/handlers"
+	"github.com/umbranodens/kalabelajar/internal/repositories"
+	"github.com/umbranodens/kalabelajar/internal/services"
 )
 
 func main() {
@@ -27,12 +30,26 @@ func main() {
 	if err := database.Migrate(db); err != nil {
 		log.Fatalf("database migration failed: %v", err)
 	}
+	seedService := services.NewSeedService(
+		repositories.NewRoleRepository(db),
+		repositories.NewUserRepository(db),
+	)
+	if _, err := seedService.SeedRolesAndSuperAdmin(context.Background()); err != nil {
+		log.Fatalf("seed roles and super admin: %v", err)
+	}
 
 	router := gin.Default()
+	router.LoadHTMLGlob("web/templates/*.tmpl")
 	router.Static("/static", "./web/static")
 	router.GET("/healthz", func(c *gin.Context) {
 		c.String(http.StatusOK, "ok")
 	})
+	authService := services.NewAuthService(
+		repositories.NewUserRepository(db),
+		repositories.NewSessionRepository(db),
+		cfg.Session.TTL,
+	)
+	handlers.NewAuthHandler(authService).RegisterRoutes(router)
 
 	if err := router.Run(":" + cfg.App.Port); err != nil {
 		log.Fatalf("start server: %v", err)

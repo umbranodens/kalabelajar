@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ .Title }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/app.css">
+</head>
+<body class="auth-page">
+  <main class="auth-shell">
+    <section class="auth-panel">
+      <p class="brand-mark">Kala Belajar</p>
+      <h1>Daftar akun</h1>
+      <p class="muted">Setelah daftar, admin akan memberi role yang sesuai.</p>
+      {{ if .Error }}<div class="alert error">{{ .Error }}</div>{{ end }}
+      <form method="post" action="/register" class="form-stack">
+        <label>Nama
+          <input type="text" name="name" value="{{ .Name }}" required autocomplete="name">
+        </label>
+        <label>Email
+          <input type="text" inputmode="email" name="email" value="{{ .Email }}" required autocomplete="email">
+        </label>
+        <label>Password
+          <input type="password" name="password" required autocomplete="new-password" minlength="8">
+        </label>
+        <label>Konfirmasi Password
+          <input type="password" name="password_confirmation" required autocomplete="new-password" minlength="8">
+        </label>
+        <button type="submit">Daftar</button>
+      </form>
+      <p class="switch-link">Sudah punya akun? <a href="/login">Masuk</a></p>
+    </section>
+  </main>
+</body>
+</html>

@@ -62,6 +62,7 @@ type User struct {
 	DeletedAt    gorm.DeletedAt `gorm:"index"`
 	Tutor        *Tutor
 	Students     []Student `gorm:"foreignKey:ParentID"`
+	Sessions     []Session
 }
 
 func (u *User) BeforeCreate(_ *gorm.DB) error {
@@ -105,6 +106,25 @@ type Student struct {
 }
 
 func (s *Student) BeforeCreate(_ *gorm.DB) error {
+	if s.ID == uuid.Nil {
+		s.ID = uuid.New()
+	}
+	return nil
+}
+
+type Session struct {
+	ID           uuid.UUID `gorm:"type:uuid;default:gen_random_uuid();primaryKey"`
+	UserID       uuid.UUID `gorm:"type:uuid;not null;index"`
+	User         User      `gorm:"foreignKey:UserID"`
+	Token        string    `gorm:"type:varchar(512);unique;not null"`
+	RefreshToken *string   `gorm:"type:text"`
+	ExpiresAt    time.Time `gorm:"not null"`
+	IPAddress    string    `gorm:"type:varchar(45)"`
+	UserAgent    string    `gorm:"type:text"`
+	CreatedAt    time.Time `gorm:"not null"`
+}
+
+func (s *Session) BeforeCreate(_ *gorm.DB) error {
 	if s.ID == uuid.Nil {
 		s.ID = uuid.New()
 	}

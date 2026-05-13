@@ -1,5 +1,18 @@
 # Implementation Summary
 
+## 2026-05-13 12:08 - Local auth foundation
+
+- Branch: `master`
+- Commit: pending before commit; final pushed hash reported after Git creates it
+- Pushed: pending
+- Implemented: Auth `sessions` model, migration registration, bcrypt password hashing, local register/login service, server-side session creation and lookup, role and Super Admin seeding, seed command, login/register/pending/dashboard routes, server-rendered templates, and responsive Kala Belajar CSS.
+- Files changed: `cmd/server/main.go`, `cmd/seed/main.go`, `internal/models/core_data.go`, `internal/models/core_data_test.go`, `internal/database/database.go`, `internal/database/database_test.go`, `internal/repositories/core_data.go`, `internal/services/auth_service.go`, `internal/services/auth_service_test.go`, `internal/services/seed_service.go`, `internal/services/seed_service_test.go`, `internal/handlers/auth.go`, `web/templates/*.tmpl`, `web/static/css/app.css`, `docs/superpowers/plans/2026-05-13-local-auth-foundation.md`, `CHANGELOG.md`, `implementation-summary.md`.
+- Automated tests: `go test ./...` passed. Initial red run failed because `models.Session`, migration registration, auth service, and seed service APIs were missing.
+- Browser/manual tests: `go run ./cmd/seed` seeded roles/Super Admin. Local HTTP checks verified `GET /login` 200, wrong admin password 401 with safe error, valid admin login redirects to `/dashboard`, dashboard shows Super Admin, register new user redirects to pending, duplicate email returns 400 with error, and password confirmation mismatch returns 400 with error. In-app browser verified admin login from `/login` to `/dashboard`.
+- Verified test cases: `TC-AUTH-1.1`, `TC-AUTH-1.2`, `TC-AUTH-1.3`, `TC-AUTH-2.1`, `TC-AUTH-2.2`. `TC-AUTH-2.3` and `TC-AUTH-2.4` are covered by automated service tests but not manual browser checks. `TC-AUTH-3.1` and `TC-AUTH-3.2` remain pending until Google SSO is implemented.
+- Known issues: Google SSO is not implemented yet. There are no Super Admin management pages yet.
+- Next steps: Add Google SSO and RBAC middleware, then build Super Admin user/tutor/parent/student management pages on top of the authenticated session.
+
 ## 2026-05-13 11:50 - Core data foundation
 
 - Branch: `master`

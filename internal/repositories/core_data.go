@@ -3,6 +3,7 @@ package repositories
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/umbranodens/kalabelajar/internal/models"
@@ -20,6 +21,13 @@ func NewUserRepository(db *gorm.DB) *UserRepository {
 func (r *UserRepository) Create(ctx context.Context, user *models.User) error {
 	if err := r.db.WithContext(ctx).Create(user).Error; err != nil {
 		return fmt.Errorf("create user: %w", err)
+	}
+	return nil
+}
+
+func (r *UserRepository) TouchLastLogin(ctx context.Context, userID uuid.UUID, when time.Time) error {
+	if err := r.db.WithContext(ctx).Model(&models.User{}).Where("id = ?", userID).Update("last_login_at", when).Error; err != nil {
+		return fmt.Errorf("touch last login: %w", err)
 	}
 	return nil
 }
@@ -99,4 +107,46 @@ func (r *ActivityLogRepository) CreateActivityLog(ctx context.Context, entry *mo
 		return fmt.Errorf("create activity log: %w", err)
 	}
 	return nil
+}
+
+type RoleRepository struct {
+	db *gorm.DB
+}
+
+func NewRoleRepository(db *gorm.DB) *RoleRepository {
+	return &RoleRepository{db: db}
+}
+
+func (r *RoleRepository) UpsertRoles(ctx context.Context, roles []models.Role) error {
+	if err := r.db.WithContext(ctx).Save(&roles).Error; err != nil {
+		return fmt.Errorf("upsert roles: %w", err)
+	}
+	return nil
+}
+
+type SessionRepository struct {
+	db *gorm.DB
+}
+
+func NewSessionRepository(db *gorm.DB) *SessionRepository {
+	return &SessionRepository{db: db}
+}
+
+func (r *SessionRepository) Create(ctx context.Context, session *models.Session) error {
+	if err := r.db.WithContext(ctx).Create(session).Error; err != nil {
+		return fmt.Errorf("create session: %w", err)
+	}
+	return nil
+}
+
+func (r *SessionRepository) FindValidByToken(ctx context.Context, token string, now time.Time) (*models.Session, error) {
+	var session models.Session
+	if err := r.db.WithContext(ctx).
+		Preload("User").
+		Preload("User.Role").
+		Where("token = ? AND expires_at > ?", token, now).
+		First(&session).Error; err != nil {
+		return nil, fmt.Errorf("find valid session: %w", err)
+	}
+	return &session, nil
 }

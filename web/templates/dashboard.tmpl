@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ .Title }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/app.css">
+</head>
+<body class="dashboard-page">
+  <aside class="sidebar">
+    <div class="brand-mark light">Kala Belajar</div>
+    <nav>
+      <a href="/dashboard" class="active">Dashboard</a>
+    </nav>
+  </aside>
+  <main class="dashboard-main">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">{{ .RoleLabel }}</p>
+        <h1>Halo, {{ .User.Name }}</h1>
+      </div>
+      <form method="post" action="/logout">
+        <button class="secondary" type="submit">Keluar</button>
+      </form>
+    </header>
+    <section class="content-panel">
+      <h2>Ringkasan awal</h2>
+      <p class="muted">Fondasi dashboard sudah aktif. Data operasional akan muncul saat slice manajemen user, tutor, parent, dan murid disambungkan ke halaman ini.</p>
+      <div class="empty-state">Belum ada aktivitas terbaru.</div>
+    </section>
+  </main>
+</body>
+</html>

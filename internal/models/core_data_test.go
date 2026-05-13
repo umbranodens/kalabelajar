@@ -2,6 +2,7 @@ package models_test
 
 import (
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -19,16 +20,19 @@ func TestCoreDataModelsAssignUUIDsBeforeCreate(t *testing.T) {
 	tutor := models.Tutor{UserID: uuid.New()}
 	student := models.Student{ParentID: user.ID, Name: "Murid Kala"}
 	log := models.ActivityLog{UserID: user.ID, Action: models.ActivityLogin}
+	session := models.Session{UserID: user.ID, Token: "session-token", ExpiresAt: time.Now().Add(time.Hour)}
 
 	require.NoError(t, user.BeforeCreate(nil))
 	require.NoError(t, tutor.BeforeCreate(nil))
 	require.NoError(t, student.BeforeCreate(nil))
 	require.NoError(t, log.BeforeCreate(nil))
+	require.NoError(t, session.BeforeCreate(nil))
 
 	assert.NotEqual(t, uuid.Nil, user.ID)
 	assert.NotEqual(t, uuid.Nil, tutor.ID)
 	assert.NotEqual(t, uuid.Nil, student.ID)
 	assert.NotEqual(t, uuid.Nil, log.ID)
+	assert.NotEqual(t, uuid.Nil, session.ID)
 }
 
 func TestRoleConstantsMatchTechSpecIDs(t *testing.T) {

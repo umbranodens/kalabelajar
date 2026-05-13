@@ -1,10 +1,14 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 
 	"github.com/umbranodens/kalabelajar/internal/config"
+	"github.com/umbranodens/kalabelajar/internal/database"
+	"github.com/umbranodens/kalabelajar/internal/repositories"
+	"github.com/umbranodens/kalabelajar/internal/services"
 )
 
 func main() {
@@ -13,5 +17,22 @@ func main() {
 		log.Fatalf("load config: %v", err)
 	}
 
-	fmt.Printf("Seed command ready for %s environment. Super Admin seed will be added in the auth/model slice.\n", cfg.App.Env)
+	db, err := database.Connect(cfg.Database)
+	if err != nil {
+		log.Fatalf("connect database: %v", err)
+	}
+	if err := database.Migrate(db); err != nil {
+		log.Fatalf("migrate database: %v", err)
+	}
+
+	seeder := services.NewSeedService(
+		repositories.NewRoleRepository(db),
+		repositories.NewUserRepository(db),
+	)
+	admin, err := seeder.SeedRolesAndSuperAdmin(context.Background())
+	if err != nil {
+		log.Fatalf("seed roles and super admin: %v", err)
+	}
+
+	fmt.Printf("Seed selesai untuk %s. Super Admin siap: %s\n", cfg.App.Env, admin.Email)
 }
