@@ -3,8 +3,8 @@
 ## 2026-05-13 12:08 - Local auth foundation
 
 - Branch: `master`
-- Commit: pending before commit; final pushed hash reported after Git creates it
-- Pushed: pending
+- Commit: `a012c79` (`feat: add local auth foundation`)
+- Pushed: yes, to `origin/master`
 - Implemented: Auth `sessions` model, migration registration, bcrypt password hashing, local register/login service, server-side session creation and lookup, role and Super Admin seeding, seed command, login/register/pending/dashboard routes, server-rendered templates, and responsive Kala Belajar CSS.
 - Files changed: `cmd/server/main.go`, `cmd/seed/main.go`, `internal/models/core_data.go`, `internal/models/core_data_test.go`, `internal/database/database.go`, `internal/database/database_test.go`, `internal/repositories/core_data.go`, `internal/services/auth_service.go`, `internal/services/auth_service_test.go`, `internal/services/seed_service.go`, `internal/services/seed_service_test.go`, `internal/handlers/auth.go`, `web/templates/*.tmpl`, `web/static/css/app.css`, `docs/superpowers/plans/2026-05-13-local-auth-foundation.md`, `CHANGELOG.md`, `implementation-summary.md`.
 - Automated tests: `go test ./...` passed. Initial red run failed because `models.Session`, migration registration, auth service, and seed service APIs were missing.
