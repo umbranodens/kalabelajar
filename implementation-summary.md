@@ -1,5 +1,18 @@
 # Implementation Summary
 
+## 2026-05-13 20:46 - Activity log timestamp format
+
+- Branch: `master`
+- Commit: pending before commit; final pushed hash reported after Git creates it
+- Pushed: pending
+- Implemented: Changed Super Admin Activity Log timestamp rendering to `YYYY-MM-DD HH:MM:SS`.
+- Files changed: `web/templates/admin_activity.html`, `CHANGELOG.md`, `implementation-summary.md`.
+- Automated tests: `go test ./...` passed.
+- Browser/manual tests: Startup health check passed after seeding, and port 8080 was closed afterward.
+- Verified test cases: Activity Log timestamp display regression for `/admin/activity`.
+- Known issues: None for this slice.
+- Next steps: Continue with Tailwind compliance cleanup.
+
 ## 2026-05-13 20:31 - Super Admin sidebar fixes
 
 - Branch: `master`

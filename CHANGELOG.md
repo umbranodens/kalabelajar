@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-05-13 - Activity log timestamp format
+
+### Fixed
+- Simplified Super Admin Activity Log timestamps to `YYYY-MM-DD HH:MM:SS`.
+
+### Tested
+- Ran `go test ./...` successfully.
+- Ran startup health check successfully.
+
 ## 2026-05-13 - Super Admin sidebar fixes
 
 ### Fixed

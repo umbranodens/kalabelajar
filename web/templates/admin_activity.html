@@ -81,7 +81,7 @@
             <tbody class="divide-y divide-hairline-soft">
               {{ range .Logs }}
               <tr class="hover:bg-surface transition-colors">
-                <td class="px-4 py-3 text-steel whitespace-nowrap text-xs">{{ .CreatedAt }}</td>
+                <td class="px-4 py-3 text-steel whitespace-nowrap text-xs">{{ .CreatedAt.Format "2006-01-02 15:04:05" }}</td>
                 <td class="px-4 py-3 text-charcoal">{{ .User.Email }}</td>
                 <td class="px-4 py-3"><code class="text-xs bg-surface px-1.5 py-0.5 rounded text-charcoal">{{ .Action }}</code></td>
                 <td class="px-4 py-3 text-charcoal">{{ .EntityType }}</td>
