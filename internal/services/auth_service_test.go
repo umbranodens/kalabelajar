@@ -131,6 +131,73 @@ func TestLoginRejectsOAuthOnlyUser(t *testing.T) {
 	assert.ErrorIs(t, err, services.ErrPasswordLoginUnavailable)
 }
 
+func TestLoginWithGoogleCreatesPendingUserAndSession(t *testing.T) {
+	ctx := context.Background()
+	users := newFakeAuthUsers()
+	sessions := &fakeSessionRepository{}
+	service := services.NewAuthService(users, sessions, time.Hour)
+
+	result, err := service.LoginWithGoogleProfile(ctx, services.GoogleProfile{
+		ProviderID: "google-123",
+		Email:      "GOOGLE@example.com",
+		Name:       "Google Parent",
+		AvatarURL:  "https://example.com/avatar.png",
+	}, services.OAuthLoginInput{IPAddress: "127.0.0.1", UserAgent: "test"})
+
+	require.NoError(t, err)
+	assert.Equal(t, "google@example.com", result.User.Email)
+	assert.Equal(t, models.ProviderGoogle, result.User.Provider)
+	assert.Equal(t, "google-123", *result.User.ProviderID)
+	assert.Nil(t, result.User.PasswordHash)
+	assert.Nil(t, result.User.RoleID)
+	assert.NotEmpty(t, result.Session.Token)
+}
+
+func TestLoginWithGoogleKeepsExistingRoleAndCreatesSession(t *testing.T) {
+	ctx := context.Background()
+	users := newFakeAuthUsers()
+	roleID := models.RoleIDParent
+	existing := &models.User{
+		ID:       uuid.New(),
+		Email:    "parent@example.com",
+		Name:     "Parent Lama",
+		Provider: models.ProviderLocal,
+		RoleID:   &roleID,
+		IsActive: true,
+	}
+	users.byEmail[existing.Email] = existing
+	service := services.NewAuthService(users, &fakeSessionRepository{}, time.Hour)
+
+	result, err := service.LoginWithGoogleProfile(ctx, services.GoogleProfile{
+		ProviderID: "google-456",
+		Email:      "parent@example.com",
+		Name:       "Parent Google",
+	}, services.OAuthLoginInput{})
+
+	require.NoError(t, err)
+	assert.Equal(t, existing.ID, result.User.ID)
+	require.NotNil(t, result.User.RoleID)
+	assert.Equal(t, models.RoleIDParent, *result.User.RoleID)
+	assert.Equal(t, models.ProviderGoogle, result.User.Provider)
+	assert.Equal(t, "google-456", *result.User.ProviderID)
+}
+
+func TestLoginWithGoogleRejectsInactiveUser(t *testing.T) {
+	users := newFakeAuthUsers()
+	users.byEmail["inactive@example.com"] = &models.User{ID: uuid.New(), Email: "inactive@example.com", Provider: models.ProviderGoogle, IsActive: false}
+	service := services.NewAuthService(users, &fakeSessionRepository{}, time.Hour)
+
+	result, err := service.LoginWithGoogleProfile(context.Background(), services.GoogleProfile{
+		ProviderID: "google-789",
+		Email:      "inactive@example.com",
+		Name:       "Inactive",
+	}, services.OAuthLoginInput{})
+
+	require.Error(t, err)
+	assert.Nil(t, result)
+	assert.ErrorIs(t, err, services.ErrInactiveUser)
+}
+
 type fakeAuthUsers struct {
 	byEmail         map[string]*models.User
 	created         *models.User
@@ -159,6 +226,11 @@ func (r *fakeAuthUsers) Create(ctx context.Context, user *models.User) error {
 
 func (r *fakeAuthUsers) TouchLastLogin(ctx context.Context, userID uuid.UUID, when time.Time) error {
 	r.lastLoginUserID = &userID
+	return nil
+}
+
+func (r *fakeAuthUsers) UpdateOAuthProfile(ctx context.Context, user *models.User) error {
+	r.byEmail[user.Email] = user
 	return nil
 }
 

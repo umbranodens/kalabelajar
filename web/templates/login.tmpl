@@ -16,6 +16,10 @@
       <h1>Masuk ke dashboard</h1>
       <p class="muted">Kelola les privat dengan data yang rapi dan mudah dicek.</p>
       {{ if .Error }}<div class="alert error">{{ .Error }}</div>{{ end }}
+      {{ if .GoogleEnabled }}
+      <a class="google-button" href="/auth/google">Masuk dengan Google</a>
+      <div class="divider"><span>atau</span></div>
+      {{ end }}
       <form method="post" action="/login" class="form-stack">
         <label>Email
           <input type="text" inputmode="email" name="email" value="{{ .Email }}" required autocomplete="email">

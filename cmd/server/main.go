@@ -9,6 +9,7 @@ import (
 	"github.com/umbranodens/kalabelajar/internal/config"
 	"github.com/umbranodens/kalabelajar/internal/database"
 	"github.com/umbranodens/kalabelajar/internal/handlers"
+	"github.com/umbranodens/kalabelajar/internal/middleware"
 	"github.com/umbranodens/kalabelajar/internal/repositories"
 	"github.com/umbranodens/kalabelajar/internal/services"
 )
@@ -49,7 +50,8 @@ func main() {
 		repositories.NewSessionRepository(db),
 		cfg.Session.TTL,
 	)
-	handlers.NewAuthHandler(authService).RegisterRoutes(router)
+	router.Use(middleware.LoadSession(repositories.NewSessionRepository(db)))
+	handlers.NewAuthHandler(authService, cfg.Google, cfg.App.URL).RegisterRoutes(router)
 
 	if err := router.Run(":" + cfg.App.Port); err != nil {
 		log.Fatalf("start server: %v", err)

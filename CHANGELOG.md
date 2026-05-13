@@ -1,5 +1,27 @@
 # Changelog
 
+## 2026-05-13 - Google SSO and RBAC
+
+### Added
+- Added Google OAuth start and callback routes.
+- Added Google profile login/upsert support that creates pending-role users or updates existing accounts by email.
+- Added the `Masuk dengan Google` login action when OAuth environment values are configured.
+- Added backend RBAC middleware for loading sessions, requiring authentication, and enforcing allowed role IDs.
+- Added automated coverage for Google profile login and RBAC allow/deny behavior.
+
+### Changed
+- Server now loads session context middleware for authenticated routes.
+
+### Tested
+- Ran `go test ./...` successfully.
+- Ran `go run ./cmd/seed` successfully.
+- Verified `/login` renders with the Google login action.
+- Verified `/auth/google` returns a redirect to `accounts.google.com` without printing OAuth secrets.
+- Verified seeded Super Admin login still reaches `/dashboard` in the in-app browser.
+
+### Notes
+- Full `TC-AUTH-3.1` external Google consent flow still requires completing real Google OAuth in a browser session. The backend callback and Google profile session creation path are implemented and covered at service level.
+
 ## 2026-05-13 - Local auth foundation
 
 ### Added

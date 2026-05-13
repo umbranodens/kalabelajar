@@ -29,6 +29,7 @@ var (
 type AuthUserRepository interface {
 	FindByEmail(ctx context.Context, email string) (*models.User, error)
 	Create(ctx context.Context, user *models.User) error
+	UpdateOAuthProfile(ctx context.Context, user *models.User) error
 	TouchLastLogin(ctx context.Context, userID uuid.UUID, when time.Time) error
 }
 
@@ -57,6 +58,18 @@ type LoginInput struct {
 	Password  string
 	IPAddress string
 	UserAgent string
+}
+
+type OAuthLoginInput struct {
+	IPAddress string
+	UserAgent string
+}
+
+type GoogleProfile struct {
+	ProviderID string
+	Email      string
+	Name       string
+	AvatarURL  string
 }
 
 type AuthResult struct {
@@ -136,6 +149,55 @@ func (s *AuthService) Login(ctx context.Context, input LoginInput) (*AuthResult,
 	return &AuthResult{User: user, Session: session}, nil
 }
 
+func (s *AuthService) LoginWithGoogleProfile(ctx context.Context, profile GoogleProfile, input OAuthLoginInput) (*AuthResult, error) {
+	email := normalizeEmail(profile.Email)
+	name := strings.TrimSpace(profile.Name)
+	providerID := strings.TrimSpace(profile.ProviderID)
+	if !validEmail(email) || name == "" || providerID == "" {
+		return nil, ErrInvalidCredentials
+	}
+
+	user, err := s.users.FindByEmail(ctx, email)
+	if err != nil && !isUserNotFound(err) {
+		return nil, fmt.Errorf("find google user: %w", err)
+	}
+	if user != nil {
+		if !user.IsActive {
+			return nil, ErrInactiveUser
+		}
+		user.Name = name
+		user.Provider = models.ProviderGoogle
+		user.ProviderID = &providerID
+		user.AvatarURL = optionalString(profile.AvatarURL)
+		if err := s.users.UpdateOAuthProfile(ctx, user); err != nil {
+			return nil, fmt.Errorf("update google profile: %w", err)
+		}
+	} else {
+		user = &models.User{
+			Email:      email,
+			Name:       name,
+			Provider:   models.ProviderGoogle,
+			ProviderID: &providerID,
+			AvatarURL:  optionalString(profile.AvatarURL),
+			IsActive:   true,
+		}
+		if err := s.users.Create(ctx, user); err != nil {
+			return nil, fmt.Errorf("create google user: %w", err)
+		}
+	}
+
+	now := time.Now().UTC()
+	if err := s.users.TouchLastLogin(ctx, user.ID, now); err != nil {
+		return nil, err
+	}
+	session, err := s.createSession(ctx, user.ID, input.IPAddress, input.UserAgent)
+	if err != nil {
+		return nil, err
+	}
+
+	return &AuthResult{User: user, Session: session}, nil
+}
+
 func (s *AuthService) FindSession(ctx context.Context, token string) (*models.Session, error) {
 	if strings.TrimSpace(token) == "" {
 		return nil, ErrInvalidCredentials
@@ -191,4 +253,12 @@ func validEmail(email string) bool {
 
 func isUserNotFound(err error) bool {
 	return errors.Is(err, ErrUserNotFound) || errors.Is(err, gorm.ErrRecordNotFound)
+}
+
+func optionalString(value string) *string {
+	trimmed := strings.TrimSpace(value)
+	if trimmed == "" {
+		return nil
+	}
+	return &trimmed
 }

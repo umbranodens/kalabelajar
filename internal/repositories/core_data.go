@@ -32,6 +32,19 @@ func (r *UserRepository) TouchLastLogin(ctx context.Context, userID uuid.UUID, w
 	return nil
 }
 
+func (r *UserRepository) UpdateOAuthProfile(ctx context.Context, user *models.User) error {
+	updates := map[string]any{
+		"name":        user.Name,
+		"provider":    user.Provider,
+		"provider_id": user.ProviderID,
+		"avatar_url":  user.AvatarURL,
+	}
+	if err := r.db.WithContext(ctx).Model(&models.User{}).Where("id = ?", user.ID).Updates(updates).Error; err != nil {
+		return fmt.Errorf("update oauth profile: %w", err)
+	}
+	return nil
+}
+
 func (r *UserRepository) FindByID(ctx context.Context, id uuid.UUID) (*models.User, error) {
 	var user models.User
 	if err := r.db.WithContext(ctx).Preload("Role").First(&user, "id = ?", id).Error; err != nil {
