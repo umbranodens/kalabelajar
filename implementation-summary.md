@@ -3,8 +3,8 @@
 ## 2026-05-13 12:53 - Google SSO and RBAC
 
 - Branch: `master`
-- Commit: pending before commit; final pushed hash reported after Git creates it
-- Pushed: pending
+- Commit: `e391055` (`feat: add google sso and rbac`)
+- Pushed: yes, to `origin/master`
 - Implemented: Google OAuth start/callback routes, Google profile login/upsert service, OAuth login button, backend session loading middleware, role-based access middleware, and automated RBAC tests.
 - Files changed: `cmd/server/main.go`, `go.mod`, `go.sum`, `internal/handlers/auth.go`, `internal/middleware/rbac.go`, `internal/middleware/rbac_test.go`, `internal/repositories/core_data.go`, `internal/services/auth_service.go`, `internal/services/auth_service_test.go`, `web/templates/login.tmpl`, `web/static/css/app.css`, `docs/superpowers/plans/2026-05-13-google-sso-rbac.md`, `CHANGELOG.md`, `implementation-summary.md`.
 - Automated tests: `go test ./...` passed. Initial red run failed because `LoginWithGoogleProfile`, `GoogleProfile`, `OAuthLoginInput`, and RBAC middleware were missing.
