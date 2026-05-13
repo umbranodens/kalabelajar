@@ -46,11 +46,11 @@ Expected: PASS.
 
 **Files:**
 - Create: `internal/handlers/admin.go`
-- Create: `web/templates/admin_users.tmpl`
-- Create: `web/templates/admin_tutors.tmpl`
-- Create: `web/templates/admin_students.tmpl`
-- Create: `web/templates/admin_activity.tmpl`
-- Modify: `web/templates/dashboard.tmpl`
+- Create: `web/templates/admin_users.html`
+- Create: `web/templates/admin_tutors.html`
+- Create: `web/templates/admin_students.html`
+- Create: `web/templates/admin_activity.html`
+- Modify: `web/templates/dashboard.html`
 - Modify: `cmd/server/main.go`
 - Modify: `web/static/css/app.css`
 

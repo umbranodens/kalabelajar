@@ -78,7 +78,7 @@ Expected: PASS.
 **Files:**
 - Modify: `internal/handlers/auth.go`
 - Modify: `cmd/server/main.go`
-- Modify: `web/templates/login.tmpl`
+- Modify: `web/templates/login.html`
 
 - [x] **Step 1: Add OAuth routes**
 

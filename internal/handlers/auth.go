@@ -59,14 +59,14 @@ func (h *AuthHandler) RegisterRoutes(router *gin.Engine) {
 }
 
 func (h *AuthHandler) ShowLogin(c *gin.Context) {
-	c.HTML(http.StatusOK, "login.tmpl", gin.H{
+	c.HTML(http.StatusOK, "login.html", gin.H{
 		"Title":         "Masuk - Kala Belajar",
 		"GoogleEnabled": h.googleConfigured(),
 	})
 }
 
 func (h *AuthHandler) ShowRegister(c *gin.Context) {
-	c.HTML(http.StatusOK, "register.tmpl", gin.H{"Title": "Daftar - Kala Belajar"})
+	c.HTML(http.StatusOK, "register.html", gin.H{"Title": "Daftar - Kala Belajar"})
 }
 
 func (h *AuthHandler) Register(c *gin.Context) {
@@ -79,7 +79,7 @@ func (h *AuthHandler) Register(c *gin.Context) {
 		UserAgent:            c.Request.UserAgent(),
 	})
 	if err != nil {
-		c.HTML(http.StatusBadRequest, "register.tmpl", gin.H{
+		c.HTML(http.StatusBadRequest, "register.html", gin.H{
 			"Title": "Daftar - Kala Belajar",
 			"Error": registerErrorMessage(err),
 			"Name":  c.PostForm("name"),
@@ -100,7 +100,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		UserAgent: c.Request.UserAgent(),
 	})
 	if err != nil {
-		c.HTML(http.StatusUnauthorized, "login.tmpl", gin.H{
+		c.HTML(http.StatusUnauthorized, "login.html", gin.H{
 			"Title":         "Masuk - Kala Belajar",
 			"Error":         loginErrorMessage(err),
 			"Email":         c.PostForm("email"),
@@ -115,7 +115,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 
 func (h *AuthHandler) GoogleStart(c *gin.Context) {
 	if !h.googleConfigured() {
-		c.HTML(http.StatusServiceUnavailable, "login.tmpl", gin.H{
+		c.HTML(http.StatusServiceUnavailable, "login.html", gin.H{
 			"Title": "Masuk - Kala Belajar",
 			"Error": "Login Google belum dikonfigurasi.",
 		})
@@ -123,7 +123,7 @@ func (h *AuthHandler) GoogleStart(c *gin.Context) {
 	}
 	state, err := newOAuthState()
 	if err != nil {
-		c.HTML(http.StatusInternalServerError, "login.tmpl", gin.H{
+		c.HTML(http.StatusInternalServerError, "login.html", gin.H{
 			"Title":         "Masuk - Kala Belajar",
 			"Error":         "Login Google belum bisa dimulai.",
 			"GoogleEnabled": true,
@@ -141,7 +141,7 @@ func (h *AuthHandler) GoogleCallback(c *gin.Context) {
 	}
 	expectedState, err := c.Cookie(googleStateCookieName)
 	if err != nil || expectedState == "" || c.Query("state") != expectedState {
-		c.HTML(http.StatusBadRequest, "login.tmpl", gin.H{
+		c.HTML(http.StatusBadRequest, "login.html", gin.H{
 			"Title":         "Masuk - Kala Belajar",
 			"Error":         "Sesi login Google tidak valid. Coba lagi ya.",
 			"GoogleEnabled": true,
@@ -152,7 +152,7 @@ func (h *AuthHandler) GoogleCallback(c *gin.Context) {
 
 	token, err := h.googleOAuth.Exchange(c.Request.Context(), c.Query("code"))
 	if err != nil {
-		c.HTML(http.StatusBadRequest, "login.tmpl", gin.H{
+		c.HTML(http.StatusBadRequest, "login.html", gin.H{
 			"Title":         "Masuk - Kala Belajar",
 			"Error":         "Kode Google tidak valid.",
 			"GoogleEnabled": true,
@@ -161,7 +161,7 @@ func (h *AuthHandler) GoogleCallback(c *gin.Context) {
 	}
 	profile, err := h.fetchGoogleProfile(c.Request.Context(), token)
 	if err != nil {
-		c.HTML(http.StatusBadGateway, "login.tmpl", gin.H{
+		c.HTML(http.StatusBadGateway, "login.html", gin.H{
 			"Title":         "Masuk - Kala Belajar",
 			"Error":         "Profil Google belum bisa dibaca.",
 			"GoogleEnabled": true,
@@ -173,7 +173,7 @@ func (h *AuthHandler) GoogleCallback(c *gin.Context) {
 		UserAgent: c.Request.UserAgent(),
 	})
 	if err != nil {
-		c.HTML(http.StatusUnauthorized, "login.tmpl", gin.H{
+		c.HTML(http.StatusUnauthorized, "login.html", gin.H{
 			"Title":         "Masuk - Kala Belajar",
 			"Error":         loginErrorMessage(err),
 			"GoogleEnabled": true,
@@ -196,7 +196,7 @@ func (h *AuthHandler) Pending(c *gin.Context) {
 		c.Redirect(http.StatusFound, "/login")
 		return
 	}
-	c.HTML(http.StatusOK, "pending.tmpl", gin.H{
+	c.HTML(http.StatusOK, "pending.html", gin.H{
 		"Title": "Menunggu Role - Kala Belajar",
 		"User":  session.User,
 	})
@@ -213,7 +213,7 @@ func (h *AuthHandler) Dashboard(c *gin.Context) {
 		return
 	}
 
-	c.HTML(http.StatusOK, "dashboard.tmpl", gin.H{
+	c.HTML(http.StatusOK, "dashboard.html", gin.H{
 		"Title":     "Dashboard - Kala Belajar",
 		"User":      session.User,
 		"RoleLabel": roleLabel(session.User.RoleID),

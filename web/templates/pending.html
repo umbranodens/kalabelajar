@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ .Title }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+          colors: {
+            primary:  '#5645d4',
+            'primary-pressed': '#4534b3',
+            navy:     '#0a1530',
+            canvas:   '#ffffff',
+            surface:  '#f6f5f4',
+            hairline: '#e5e3df',
+            'hairline-strong': '#c8c4be',
+            ink:      '#1a1a1a',
+            charcoal: '#37352f',
+            steel:    '#787671',
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="/static/css/app.css">
+</head>
+<body class="font-sans bg-surface min-h-screen flex items-center justify-center p-6">
+  <div class="w-full max-w-sm">
+    <div class="bg-white rounded-xl border border-hairline shadow-sm p-8 text-center">
+      <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-5">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#5645d4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      </div>
+      <p class="text-sm font-semibold text-primary uppercase tracking-wider mb-2">Kala Belajar</p>
+      <h1 class="text-xl font-semibold text-ink mb-3">Menunggu role</h1>
+      <p class="text-steel text-sm leading-relaxed mb-8">
+        Hai <strong class="text-charcoal">{{ .User.Name }}</strong>, akun kamu sudah dibuat.<br>
+        Admin akan memberi akses yang sesuai segera.
+      </p>
+      <form id="pending-logout-form" method="post" action="/logout">
+        <button id="pending-logout-btn" type="submit"
+          class="w-full h-10 rounded-lg border border-hairline-strong text-sm font-medium text-charcoal bg-white hover:bg-surface transition-colors">
+          Keluar
+        </button>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

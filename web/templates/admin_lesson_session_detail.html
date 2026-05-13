@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ .Title }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+          colors: {
+            primary: '#5645d4', 'primary-pressed': '#4534b3',
+            navy: '#0a1530', canvas: '#ffffff', surface: '#f6f5f4',
+            hairline: '#e5e3df', 'hairline-soft': '#ede9e4', 'hairline-strong': '#c8c4be',
+            ink: '#1a1a1a', charcoal: '#37352f', steel: '#787671',
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="/static/css/app.css">
+  <script defer src="/static/js/app.js"></script>
+</head>
+<body class="font-sans bg-surface">
+<div class="flex h-screen overflow-hidden">
+  <div id="sidebar-overlay" class="fixed inset-0 bg-black/40 z-20 opacity-0 pointer-events-none lg:hidden"></div>
+  <!-- FIXED: Full admin sidebar (was only 2 links before) -->
+  <aside id="sidebar-drawer" class="drawer-closed fixed top-0 left-0 h-full w-64 bg-navy z-30 flex flex-col flex-shrink-0 lg:static lg:translate-x-0 lg:z-auto">
+    <div class="px-5 py-5 border-b border-white/10"><span class="text-white font-bold text-lg tracking-tight">Kala Belajar</span></div>
+    <nav class="flex-1 px-3 py-4 flex flex-col gap-0.5 overflow-y-auto">
+      <a href="/dashboard" class="flex items-center gap-3 px-3 py-2 rounded-lg text-white/60 hover:text-white hover:bg-white/10 text-sm font-medium transition-colors"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Dashboard</a>
+      <a href="/admin/users" class="flex items-center gap-3 px-3 py-2 rounded-lg text-white/60 hover:text-white hover:bg-white/10 text-sm font-medium transition-colors"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>User</a>
+      <a href="/admin/tutors" class="flex items-center gap-3 px-3 py-2 rounded-lg text-white/60 hover:text-white hover:bg-white/10 text-sm font-medium transition-colors"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/></svg>Tutor</a>
+      <a href="/admin/students" class="flex items-center gap-3 px-3 py-2 rounded-lg text-white/60 hover:text-white hover:bg-white/10 text-sm font-medium transition-colors"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Murid</a>
+      <a href="/admin/schedules" class="flex items-center gap-3 px-3 py-2 rounded-lg text-white/60 hover:text-white hover:bg-white/10 text-sm font-medium transition-colors"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Jadwal</a>
+      <a href="/admin/lesson-sessions" class="flex items-center gap-3 px-3 py-2 rounded-lg bg-white/10 text-white text-sm font-medium"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Sesi &amp; Laporan</a>
+      <a href="/admin/activity" class="flex items-center gap-3 px-3 py-2 rounded-lg text-white/60 hover:text-white hover:bg-white/10 text-sm font-medium transition-colors"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Activity Log</a>
+    </nav>
+  </aside>
+  <div class="flex-1 flex flex-col overflow-hidden">
+    <header class="h-16 bg-white border-b border-hairline flex items-center px-4 lg:px-6 gap-4 flex-shrink-0">
+      <button id="sidebar-toggle" class="lg:hidden p-2 rounded-lg hover:bg-surface text-charcoal transition-colors"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+      <div class="flex-1 min-w-0 flex items-center gap-3">
+        <a href="/admin/lesson-sessions" class="p-1.5 rounded-lg hover:bg-surface text-steel transition-colors">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </a>
+        <div>
+          <p class="text-xs font-semibold text-primary uppercase tracking-wider">Super Admin</p>
+          <h1 class="text-lg font-semibold text-ink leading-tight">Detail Laporan Sesi</h1>
+        </div>
+      </div>
+    </header>
+    <main class="flex-1 overflow-y-auto p-4 lg:p-8">
+      <!-- Session meta -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div class="bg-white rounded-xl border border-hairline p-4">
+          <p class="text-xs font-semibold text-steel uppercase tracking-wider mb-1">Tutor</p>
+          <p class="text-sm font-semibold text-charcoal">{{ .Session.Tutor.User.Name }}</p>
+        </div>
+        <div class="bg-white rounded-xl border border-hairline p-4">
+          <p class="text-xs font-semibold text-steel uppercase tracking-wider mb-1">Murid</p>
+          <p class="text-sm font-semibold text-charcoal">{{ .Session.Student.Name }}</p>
+        </div>
+        <div class="bg-white rounded-xl border border-hairline p-4">
+          <p class="text-xs font-semibold text-steel uppercase tracking-wider mb-1">Sesi</p>
+          <p class="text-sm text-charcoal">{{ .Session.DateLabel }} · {{ .Session.TimeLabel }}</p>
+          <span class="status-badge status-{{ .Session.Status }} mt-1 inline-block">{{ .Session.StatusLabel }}</span>
+        </div>
+        <div class="bg-white rounded-xl border border-hairline p-4">
+          <p class="text-xs font-semibold text-steel uppercase tracking-wider mb-1">Subject</p>
+          <p class="text-sm text-charcoal">{{ .Session.SubjectLabel }}</p>
+        </div>
+      </div>
+
+      {{ if .Session.Report }}
+      <div class="bg-white rounded-xl border border-hairline p-6">
+        <div class="flex items-center gap-2 mb-6">
+          {{ if .Session.Report.PublishedAt }}
+          <span class="status-badge status-published">Terbit</span>
+          {{ else }}
+          <span class="status-badge status-draft">Draft</span>
+          {{ end }}
+        </div>
+        <div class="grid gap-5">
+          <div>
+            <p class="text-xs font-semibold text-steel uppercase tracking-wider mb-1.5">Materi</p>
+            <p class="text-sm text-charcoal leading-relaxed">{{ .Session.Report.MaterialSummary }}</p>
+          </div>
+          <div class="border-t border-hairline-soft pt-5">
+            <p class="text-xs font-semibold text-steel uppercase tracking-wider mb-1.5">Progres</p>
+            <p class="text-sm text-charcoal leading-relaxed">{{ if .Session.Report.ProgressSummary }}{{ .Session.Report.ProgressSummary }}{{ else }}-{{ end }}</p>
+          </div>
+          <div class="border-t border-hairline-soft pt-5">
+            <p class="text-xs font-semibold text-steel uppercase tracking-wider mb-1.5">PR / Tugas</p>
+            <p class="text-sm text-charcoal leading-relaxed">{{ if .Session.Report.Homework }}{{ .Session.Report.Homework }}{{ else }}-{{ end }}</p>
+          </div>
+          <div class="border-t border-hairline-soft pt-5">
+            <p class="text-xs font-semibold text-steel uppercase tracking-wider mb-1.5">Kendala</p>
+            <p class="text-sm text-charcoal leading-relaxed">{{ if .Session.Report.IssueNotes }}{{ .Session.Report.IssueNotes }}{{ else }}-{{ end }}</p>
+          </div>
+          <div class="border-t border-hairline-soft pt-5">
+            <p class="text-xs font-semibold text-steel uppercase tracking-wider mb-1.5">Saran Latihan</p>
+            <p class="text-sm text-charcoal leading-relaxed">{{ if .Session.Report.HomePracticeSuggestion }}{{ .Session.Report.HomePracticeSuggestion }}{{ else }}-{{ end }}</p>
+          </div>
+        </div>
+      </div>
+      {{ else }}
+      <div class="border border-dashed border-hairline-strong rounded-xl text-steel text-sm px-5 py-6 text-center">Laporan belum tersedia.</div>
+      {{ end }}
+    </main>
+  </div>
+</div>
+</body>
+</html>

@@ -73,7 +73,7 @@ func (h *AdminHandler) Dashboard(c *gin.Context) {
 			data["ChildCount"] = childCount
 			data["ScheduleCount"] = scheduleCount
 		}
-		c.HTML(http.StatusOK, "dashboard.tmpl", data)
+		c.HTML(http.StatusOK, "dashboard.html", data)
 		return
 	}
 	var totalTutors, totalStudents, totalParents, pendingTutors, activeSchedules, activities int64
@@ -83,7 +83,7 @@ func (h *AdminHandler) Dashboard(c *gin.Context) {
 	h.db.Model(&models.Tutor{}).Where("is_verified = ?", false).Count(&pendingTutors)
 	h.db.Model(&models.Schedule{}).Where("is_active = ?", true).Count(&activeSchedules)
 	h.db.Model(&models.ActivityLog{}).Count(&activities)
-	c.HTML(http.StatusOK, "dashboard.tmpl", gin.H{
+	c.HTML(http.StatusOK, "dashboard.html", gin.H{
 		"Title":           "Dashboard - Kala Belajar",
 		"User":            user,
 		"RoleLabel":       "Super Admin",
@@ -119,7 +119,7 @@ func (h *AdminHandler) Users(c *gin.Context) {
 		query = query.Where("LOWER(name) LIKE LOWER(?) OR LOWER(email) LIKE LOWER(?)", "%"+search+"%", "%"+search+"%")
 	}
 	query.Find(&users)
-	c.HTML(http.StatusOK, "admin_users.tmpl", gin.H{"Title": "Manajemen User", "Users": users, "Query": c.Request.URL.Query()})
+	c.HTML(http.StatusOK, "admin_users.html", gin.H{"Title": "Manajemen User", "Users": users, "Query": c.Request.URL.Query()})
 }
 
 func (h *AdminHandler) SetUserActive(c *gin.Context) {
@@ -146,7 +146,7 @@ func (h *AdminHandler) Tutors(c *gin.Context) {
 		}
 	}
 	query.Find(&tutors)
-	c.HTML(http.StatusOK, "admin_tutors.tmpl", gin.H{"Title": "Manajemen Tutor", "Tutors": tutors, "Query": c.Request.URL.Query()})
+	c.HTML(http.StatusOK, "admin_tutors.html", gin.H{"Title": "Manajemen Tutor", "Tutors": tutors, "Query": c.Request.URL.Query()})
 }
 
 func (h *AdminHandler) VerifyTutor(c *gin.Context) {
@@ -176,7 +176,7 @@ func (h *AdminHandler) Students(c *gin.Context) {
 		Where("tutors.is_verified = ? AND users.is_active = ?", true, true).
 		Order("users.name asc").
 		Find(&tutors)
-	c.HTML(http.StatusOK, "admin_students.tmpl", gin.H{"Title": "Manajemen Murid", "Students": students, "Tutors": tutors, "Query": c.Request.URL.Query()})
+	c.HTML(http.StatusOK, "admin_students.html", gin.H{"Title": "Manajemen Murid", "Students": students, "Tutors": tutors, "Query": c.Request.URL.Query()})
 }
 
 func (h *AdminHandler) AssignTutor(c *gin.Context) {
@@ -234,7 +234,7 @@ func (h *AdminHandler) TutorSchedules(c *gin.Context) {
 	user, _ := middleware.CurrentUser(c)
 	var tutor models.Tutor
 	if err := h.db.Where("user_id = ?", user.ID).First(&tutor).Error; err != nil {
-		c.HTML(http.StatusOK, "role_schedules.tmpl", gin.H{"Title": "Jadwal Saya", "User": user, "RoleLabel": "Tutor", "Schedules": []models.Schedule{}})
+		c.HTML(http.StatusOK, "role_schedules.html", gin.H{"Title": "Jadwal Saya", "User": user, "RoleLabel": "Tutor", "Schedules": []models.Schedule{}})
 		return
 	}
 	var schedules []models.Schedule
@@ -243,7 +243,7 @@ func (h *AdminHandler) TutorSchedules(c *gin.Context) {
 		Where("tutor_id = ? AND is_active = ?", tutor.ID, true).
 		Order("day_of_week asc, start_time asc").
 		Find(&schedules)
-	c.HTML(http.StatusOK, "role_schedules.tmpl", gin.H{"Title": "Jadwal Saya", "User": user, "RoleLabel": "Tutor", "Schedules": schedules, "ScheduleTitle": "Jadwal Saya", "EmptyText": "Belum ada jadwal hari ini."})
+	c.HTML(http.StatusOK, "role_schedules.html", gin.H{"Title": "Jadwal Saya", "User": user, "RoleLabel": "Tutor", "Schedules": schedules, "ScheduleTitle": "Jadwal Saya", "EmptyText": "Belum ada jadwal hari ini."})
 }
 
 func (h *AdminHandler) ParentSchedules(c *gin.Context) {
@@ -255,7 +255,7 @@ func (h *AdminHandler) ParentSchedules(c *gin.Context) {
 		Where("students.parent_id = ? AND schedules.is_active = ?", user.ID, true).
 		Order("schedules.day_of_week asc, schedules.start_time asc").
 		Find(&schedules)
-	c.HTML(http.StatusOK, "role_schedules.tmpl", gin.H{"Title": "Jadwal Les Anak", "User": user, "RoleLabel": "Parent", "Schedules": schedules, "ScheduleTitle": "Jadwal Les Anak", "EmptyText": "Belum ada jadwal anak yang aktif."})
+	c.HTML(http.StatusOK, "role_schedules.html", gin.H{"Title": "Jadwal Les Anak", "User": user, "RoleLabel": "Parent", "Schedules": schedules, "ScheduleTitle": "Jadwal Les Anak", "EmptyText": "Belum ada jadwal anak yang aktif."})
 }
 
 func (h *AdminHandler) renderAdminSchedules(c *gin.Context, status int, errorMessage string) {
@@ -281,7 +281,7 @@ func (h *AdminHandler) renderAdminSchedules(c *gin.Context, status int, errorMes
 		Order("name asc").
 		Find(&students)
 
-	c.HTML(status, "admin_schedules.tmpl", gin.H{
+	c.HTML(status, "admin_schedules.html", gin.H{
 		"Title":     "Manajemen Jadwal",
 		"Schedules": schedules,
 		"Tutors":    tutors,
@@ -298,7 +298,7 @@ func (h *AdminHandler) Activity(c *gin.Context) {
 		query = query.Where("action = ?", action)
 	}
 	query.Find(&logs)
-	c.HTML(http.StatusOK, "admin_activity.tmpl", gin.H{"Title": "Activity Log", "Logs": logs, "Query": c.Request.URL.Query()})
+	c.HTML(http.StatusOK, "admin_activity.html", gin.H{"Title": "Activity Log", "Logs": logs, "Query": c.Request.URL.Query()})
 }
 
 func (h *AdminHandler) AdminLessonSessions(c *gin.Context) {
@@ -308,7 +308,7 @@ func (h *AdminHandler) AdminLessonSessions(c *gin.Context) {
 		query = query.Where("status = ?", status)
 	}
 	query.Find(&sessions)
-	c.HTML(http.StatusOK, "admin_lesson_sessions.tmpl", gin.H{"Title": "Laporan Sesi / Kehadiran", "Sessions": sessions, "Query": c.Request.URL.Query()})
+	c.HTML(http.StatusOK, "admin_lesson_sessions.html", gin.H{"Title": "Laporan Sesi / Kehadiran", "Sessions": sessions, "Query": c.Request.URL.Query()})
 }
 
 func (h *AdminHandler) AdminLessonSessionDetail(c *gin.Context) {
@@ -322,14 +322,14 @@ func (h *AdminHandler) AdminLessonSessionDetail(c *gin.Context) {
 		c.Redirect(http.StatusFound, "/admin/lesson-sessions")
 		return
 	}
-	c.HTML(http.StatusOK, "admin_lesson_session_detail.tmpl", gin.H{"Title": "Detail Laporan Sesi", "Session": session})
+	c.HTML(http.StatusOK, "admin_lesson_session_detail.html", gin.H{"Title": "Detail Laporan Sesi", "Session": session})
 }
 
 func (h *AdminHandler) TutorSessions(c *gin.Context) {
 	user, _ := middleware.CurrentUser(c)
 	tutor, err := h.currentTutor(user.ID)
 	if err != nil {
-		c.HTML(http.StatusOK, "tutor_sessions.tmpl", gin.H{"Title": "Riwayat Mengajar", "User": user, "Sessions": []models.LessonSession{}})
+		c.HTML(http.StatusOK, "tutor_sessions.html", gin.H{"Title": "Riwayat Mengajar", "User": user, "Sessions": []models.LessonSession{}})
 		return
 	}
 	var sessions []models.LessonSession
@@ -338,7 +338,7 @@ func (h *AdminHandler) TutorSessions(c *gin.Context) {
 		Where("tutor_id = ?", tutor.ID).
 		Order("scheduled_start_at desc").
 		Find(&sessions)
-	c.HTML(http.StatusOK, "tutor_sessions.tmpl", gin.H{"Title": "Riwayat Mengajar", "User": user, "Sessions": sessions})
+	c.HTML(http.StatusOK, "tutor_sessions.html", gin.H{"Title": "Riwayat Mengajar", "User": user, "Sessions": sessions})
 }
 
 func (h *AdminHandler) TutorReportForm(c *gin.Context) {
@@ -392,7 +392,7 @@ func (h *AdminHandler) ParentReports(c *gin.Context) {
 	query.Find(&reports)
 	var students []models.Student
 	h.db.Where("parent_id = ?", user.ID).Order("name asc").Find(&students)
-	c.HTML(http.StatusOK, "parent_reports.tmpl", gin.H{"Title": "Laporan Progres Anak", "User": user, "Reports": reports, "Students": students, "Query": c.Request.URL.Query()})
+	c.HTML(http.StatusOK, "parent_reports.html", gin.H{"Title": "Laporan Progres Anak", "User": user, "Reports": reports, "Students": students, "Query": c.Request.URL.Query()})
 }
 
 func (h *AdminHandler) renderTutorReportForm(c *gin.Context, user *models.User, status int, errorMessage string) {
@@ -411,7 +411,7 @@ func (h *AdminHandler) renderTutorReportForm(c *gin.Context, user *models.User, 
 		c.Redirect(http.StatusFound, "/tutor/sessions")
 		return
 	}
-	c.HTML(status, "tutor_report_form.tmpl", gin.H{"Title": "Isi Laporan", "User": user, "Session": session, "Error": errorMessage})
+	c.HTML(status, "tutor_report_form.html", gin.H{"Title": "Isi Laporan", "User": user, "Session": session, "Error": errorMessage})
 }
 
 func (h *AdminHandler) currentTutor(userID uuid.UUID) (*models.Tutor, error) {

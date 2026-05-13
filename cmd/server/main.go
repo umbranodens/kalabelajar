@@ -46,7 +46,7 @@ func main() {
 	}
 
 	router := gin.Default()
-	router.LoadHTMLGlob("web/templates/*.tmpl")
+	router.LoadHTMLGlob("web/templates/*.html")
 	router.Static("/static", "./web/static")
 	router.GET("/healthz", func(c *gin.Context) {
 		c.String(http.StatusOK, "ok")

@@ -80,10 +80,10 @@ Expected: PASS.
 
 **Files:**
 - Create: `internal/handlers/auth.go`
-- Create: `web/templates/login.tmpl`
-- Create: `web/templates/register.tmpl`
-- Create: `web/templates/dashboard.tmpl`
-- Create: `web/templates/pending.tmpl`
+- Create: `web/templates/login.html`
+- Create: `web/templates/register.html`
+- Create: `web/templates/dashboard.html`
+- Create: `web/templates/pending.html`
 - Create: `web/static/css/app.css`
 - Modify: `cmd/server/main.go`
 

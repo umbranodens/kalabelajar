@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ .Title }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+          colors: {
+            primary:  '#5645d4',
+            'primary-pressed': '#4534b3',
+            navy:     '#0a1530',
+            'navy-mid': '#1a2a52',
+            canvas:   '#ffffff',
+            surface:  '#f6f5f4',
+            hairline: '#e5e3df',
+            'hairline-soft': '#ede9e4',
+            'hairline-strong': '#c8c4be',
+            ink:      '#1a1a1a',
+            charcoal: '#37352f',
+            slate:    '#5d5b54',
+            steel:    '#787671',
+            stone:    '#a4a097',
+            muted:    '#bbb8b1',
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="/static/css/app.css">
+</head>
+<body class="font-sans bg-surface min-h-screen flex">
+
+  <!-- Left brand panel -->
+  <div class="hidden lg:flex lg:w-[45%] bg-navy flex-col justify-between p-12 relative overflow-hidden">
+    <div class="absolute -top-24 -left-24 w-96 h-96 bg-primary/20 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute bottom-0 right-0 w-80 h-80 bg-[#7b3ff2]/15 rounded-full blur-3xl pointer-events-none"></div>
+
+    <div class="relative z-10">
+      <span class="text-white font-bold text-xl tracking-tight">Kala Belajar</span>
+    </div>
+    <div class="relative z-10">
+      <h2 class="text-white text-4xl font-semibold leading-tight tracking-tight mb-4">
+        Mulai perjalanan<br>belajarmu.
+      </h2>
+      <p class="text-white/60 text-base leading-relaxed">
+        Daftar sebagai tutor atau parent. Admin akan menyesuaikan akses kamu setelah verifikasi.
+      </p>
+    </div>
+    <div class="relative z-10 flex gap-3">
+      <div class="w-2 h-2 rounded-full bg-[#5645d4]"></div>
+      <div class="w-2 h-2 rounded-full bg-[#ff64c8]"></div>
+      <div class="w-2 h-2 rounded-full bg-[#2a9d99]"></div>
+    </div>
+  </div>
+
+  <!-- Right form panel -->
+  <div class="flex-1 flex items-center justify-center p-6">
+    <div class="w-full max-w-md">
+
+      <p class="lg:hidden text-navy font-bold text-xl mb-8">Kala Belajar</p>
+
+      <h1 class="text-2xl font-semibold text-ink mb-1">Daftar akun</h1>
+      <p class="text-steel text-sm mb-8">Setelah daftar, admin akan memberi role yang sesuai.</p>
+
+      {{ if .Error }}
+      <div class="bg-[#fde0ec] text-[#a02e6d] text-sm font-medium rounded-lg px-4 py-3 mb-6">{{ .Error }}</div>
+      {{ end }}
+
+      <form id="register-form" method="post" action="/register" class="flex flex-col gap-4">
+        <label class="flex flex-col gap-1.5">
+          <span class="text-sm font-medium text-charcoal">Nama</span>
+          <input id="register-name" type="text" name="name" value="{{ .Name }}" required autocomplete="name"
+            class="h-11 px-3 rounded-lg border border-hairline-strong bg-white text-ink text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all">
+        </label>
+        <label class="flex flex-col gap-1.5">
+          <span class="text-sm font-medium text-charcoal">Email</span>
+          <input id="register-email" type="text" inputmode="email" name="email" value="{{ .Email }}" required autocomplete="email"
+            class="h-11 px-3 rounded-lg border border-hairline-strong bg-white text-ink text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all">
+        </label>
+        <label class="flex flex-col gap-1.5">
+          <span class="text-sm font-medium text-charcoal">Password</span>
+          <input id="register-password" type="password" name="password" required autocomplete="new-password" minlength="8"
+            class="h-11 px-3 rounded-lg border border-hairline-strong bg-white text-ink text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all">
+        </label>
+        <label class="flex flex-col gap-1.5">
+          <span class="text-sm font-medium text-charcoal">Konfirmasi Password</span>
+          <input id="register-password-confirm" type="password" name="password_confirmation" required autocomplete="new-password" minlength="8"
+            class="h-11 px-3 rounded-lg border border-hairline-strong bg-white text-ink text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all">
+        </label>
+        <button id="register-submit" type="submit"
+          class="mt-2 h-11 rounded-lg bg-primary text-white text-sm font-medium hover:bg-primary-pressed transition-colors">
+          Daftar
+        </button>
+      </form>
+
+      <p class="text-steel text-sm mt-6 text-center">
+        Sudah punya akun? <a href="/login" class="text-primary font-medium hover:underline">Masuk</a>
+      </p>
+    </div>
+  </div>
+
+</body>
+</html>
