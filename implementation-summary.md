@@ -3,8 +3,8 @@
 ## 2026-05-13 13:01 - Super Admin core management
 
 - Branch: `master`
-- Commit: pending before commit; final pushed hash reported after Git creates it
-- Pushed: pending
+- Commit: `545dbea` (`feat: add super admin core management`)
+- Pushed: yes, to `origin/master`
 - Implemented: Local development seed data for tutors/parents/students, Super Admin dashboard metrics, RBAC-protected management routes, user list/filter/toggle active, tutor list/filter/verify, student list/filter/assign tutor, and activity log list/filter.
 - Files changed: `cmd/server/main.go`, `cmd/seed/main.go`, `internal/handlers/admin.go`, `internal/repositories/core_data.go`, `internal/seed/local.go`, `internal/services/admin_service.go`, `internal/services/admin_service_test.go`, `web/templates/dashboard.tmpl`, `web/templates/admin_users.tmpl`, `web/templates/admin_tutors.tmpl`, `web/templates/admin_students.tmpl`, `web/templates/admin_activity.tmpl`, `web/static/css/app.css`, `docs/superpowers/plans/2026-05-13-super-admin-core-management.md`, `CHANGELOG.md`, `implementation-summary.md`.
 - Automated tests: `go test ./...` passed. Initial red run failed because `NewAdminService`, `AdminActionInput`, and `SetUserActiveInput` were missing.
