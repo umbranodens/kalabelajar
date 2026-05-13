@@ -37,6 +37,7 @@ func TestMigrationModelsIncludesCoreDataTables(t *testing.T) {
 	assert.Contains(t, modelNames, "User")
 	assert.Contains(t, modelNames, "Tutor")
 	assert.Contains(t, modelNames, "Student")
+	assert.Contains(t, modelNames, "Schedule")
 	assert.Contains(t, modelNames, "Session")
 	assert.Contains(t, modelNames, "ActivityLog")
 }

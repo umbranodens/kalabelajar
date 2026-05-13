@@ -32,6 +32,7 @@
         <a href="/admin/users">User</a>
         <a href="/admin/tutors">Tutor</a>
         <a href="/admin/students">Murid</a>
+        <a href="/admin/schedules">Jadwal</a>
         <a href="/admin/activity">Activity Log</a>
       </div>
       <h2>Ringkasan operasional</h2>
@@ -39,6 +40,7 @@
         <a class="metric-card" href="/admin/tutors"><strong>{{ .TotalTutors }}</strong><span>Total Tutor</span></a>
         <a class="metric-card" href="/admin/students"><strong>{{ .TotalStudents }}</strong><span>Total Murid</span></a>
         <a class="metric-card" href="/admin/users?role=parent"><strong>{{ .TotalParents }}</strong><span>Total Parent</span></a>
+        <a class="metric-card" href="/admin/schedules?status=active"><strong>{{ .ActiveSchedules }}</strong><span>Jadwal Aktif</span></a>
         <a class="metric-card" href="/admin/tutors?status=unverified"><strong>{{ .PendingTutors }}</strong><span>Pending Approval</span></a>
       </div>
       {{ if eq .ActivityCount 0 }}
@@ -47,9 +49,25 @@
       <p class="muted">Ada {{ .ActivityCount }} aktivitas tercatat. Buka Activity Log untuk detail audit.</p>
       {{ end }}
       {{ else }}
+      {{ if .IsTutor }}
+      <h2>Ringkasan Mengajar</h2>
+      <div class="metrics-grid">
+        <a class="metric-card" href="/tutor/schedules"><strong>{{ .ScheduleCount }}</strong><span>Jadwal Aktif</span></a>
+        <div class="metric-card"><strong>{{ .StudentCount }}</strong><span>Murid Aktif</span></div>
+      </div>
+      <p class="muted">Buka Jadwal Saya untuk melihat murid, jam, lokasi, dan status jadwal.</p>
+      {{ else if .IsParent }}
+      <h2>Ringkasan Anak</h2>
+      <div class="metrics-grid">
+        <a class="metric-card" href="/parent/schedules"><strong>{{ .ScheduleCount }}</strong><span>Jadwal Anak</span></a>
+        <div class="metric-card"><strong>{{ .ChildCount }}</strong><span>Anak Terdaftar</span></div>
+      </div>
+      <p class="muted">Jadwal nonaktif tidak ditampilkan di ringkasan Parent.</p>
+      {{ else }}
       <h2>Ringkasan awal</h2>
       <p class="muted">Fondasi dashboard sudah aktif. Data operasional akan muncul sesuai role kamu.</p>
       <div class="empty-state">Belum ada aktivitas terbaru.</div>
+      {{ end }}
       {{ end }}
     </section>
   </main>

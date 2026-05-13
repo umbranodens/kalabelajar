@@ -34,7 +34,7 @@ func LocalDevelopmentData(ctx context.Context, db *gorm.DB) error {
 	if err != nil {
 		return err
 	}
-	englishTutor, err := ensureTutor(ctx, db, "tutor.english@kalabelajar.com", []string{"Bahasa Inggris"}, false)
+	englishTutor, err := ensureTutor(ctx, db, "tutor.english@kalabelajar.com", []string{"Bahasa Inggris"}, true)
 	if err != nil {
 		return err
 	}
@@ -59,6 +59,43 @@ func LocalDevelopmentData(ctx context.Context, db *gorm.DB) error {
 		if err := firstOrCreateStudent(ctx, db, &students[i]); err != nil {
 			return err
 		}
+	}
+
+	if err := firstOrCreateSchedule(ctx, db, models.Schedule{
+		TutorID:   mathTutor.ID,
+		StudentID: students[0].ID,
+		Subject:   stringPtr("Matematika"),
+		DayOfWeek: 1,
+		StartTime: "15:00",
+		EndTime:   "16:30",
+		Location:  stringPtr("Rumah Alya"),
+		IsActive:  true,
+	}); err != nil {
+		return err
+	}
+	if err := firstOrCreateSchedule(ctx, db, models.Schedule{
+		TutorID:   englishTutor.ID,
+		StudentID: students[1].ID,
+		Subject:   stringPtr("Bahasa Inggris"),
+		DayOfWeek: 3,
+		StartTime: "18:00",
+		EndTime:   "19:30",
+		Location:  stringPtr("Online"),
+		IsActive:  true,
+	}); err != nil {
+		return err
+	}
+	if err := firstOrCreateSchedule(ctx, db, models.Schedule{
+		TutorID:   mathTutor.ID,
+		StudentID: students[0].ID,
+		Subject:   stringPtr("Matematika"),
+		DayOfWeek: 6,
+		StartTime: "10:00",
+		EndTime:   "11:00",
+		Location:  stringPtr("Rumah Alya"),
+		IsActive:  false,
+	}); err != nil {
+		return err
 	}
 
 	return nil
@@ -107,12 +144,36 @@ func firstOrCreateStudent(ctx context.Context, db *gorm.DB, student *models.Stud
 	var existing models.Student
 	err := db.WithContext(ctx).Where("parent_id = ? AND name = ?", student.ParentID, student.Name).First(&existing).Error
 	if err == nil {
-		return db.WithContext(ctx).Model(&existing).Update("assigned_tutor_id", student.AssignedTutorID).Error
+		if err := db.WithContext(ctx).Model(&existing).Update("assigned_tutor_id", student.AssignedTutorID).Error; err != nil {
+			return err
+		}
+		student.ID = existing.ID
+		return nil
 	}
 	if err != gorm.ErrRecordNotFound {
 		return err
 	}
 	return db.WithContext(ctx).Create(student).Error
+}
+
+func firstOrCreateSchedule(ctx context.Context, db *gorm.DB, schedule models.Schedule) error {
+	var existing models.Schedule
+	err := db.WithContext(ctx).
+		Where("tutor_id = ? AND student_id = ? AND day_of_week = ? AND start_time = ?", schedule.TutorID, schedule.StudentID, schedule.DayOfWeek, schedule.StartTime).
+		First(&existing).Error
+	if err == nil {
+		updates := map[string]any{
+			"subject":   schedule.Subject,
+			"end_time":  schedule.EndTime,
+			"location":  schedule.Location,
+			"is_active": schedule.IsActive,
+		}
+		return db.WithContext(ctx).Model(&existing).Updates(updates).Error
+	}
+	if err != gorm.ErrRecordNotFound {
+		return err
+	}
+	return db.WithContext(ctx).Create(&schedule).Error
 }
 
 func stringPtr(value string) *string {

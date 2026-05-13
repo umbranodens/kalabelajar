@@ -84,6 +84,10 @@ func (r *TutorRepository) FindByIDWithUser(ctx context.Context, id uuid.UUID) (*
 	return &tutor, nil
 }
 
+func (r *TutorRepository) FindTutorForSchedule(ctx context.Context, id uuid.UUID) (*models.Tutor, error) {
+	return r.FindByIDWithUser(ctx, id)
+}
+
 func (r *TutorRepository) VerifyTutor(ctx context.Context, tutorID uuid.UUID) error {
 	if err := r.db.WithContext(ctx).Model(&models.Tutor{}).Where("id = ?", tutorID).Update("is_verified", true).Error; err != nil {
 		return fmt.Errorf("verify tutor: %w", err)
@@ -107,6 +111,14 @@ func (r *StudentRepository) FindByID(ctx context.Context, id uuid.UUID) (*models
 	return &student, nil
 }
 
+func (r *StudentRepository) FindStudentForSchedule(ctx context.Context, id uuid.UUID) (*models.Student, error) {
+	var student models.Student
+	if err := r.db.WithContext(ctx).Preload("Parent").First(&student, "id = ?", id).Error; err != nil {
+		return nil, fmt.Errorf("find student for schedule: %w", err)
+	}
+	return &student, nil
+}
+
 func (r *StudentRepository) UpdateAssignedTutor(ctx context.Context, studentID uuid.UUID, tutorID uuid.UUID) (*models.Student, error) {
 	var student models.Student
 	if err := r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
@@ -119,6 +131,55 @@ func (r *StudentRepository) UpdateAssignedTutor(ctx context.Context, studentID u
 		return nil, fmt.Errorf("update student assigned tutor: %w", err)
 	}
 	return &student, nil
+}
+
+type ScheduleRepository struct {
+	db *gorm.DB
+}
+
+func NewScheduleRepository(db *gorm.DB) *ScheduleRepository {
+	return &ScheduleRepository{db: db}
+}
+
+func (r *ScheduleRepository) FindTutorForSchedule(ctx context.Context, id uuid.UUID) (*models.Tutor, error) {
+	var tutor models.Tutor
+	if err := r.db.WithContext(ctx).Preload("User").First(&tutor, "id = ?", id).Error; err != nil {
+		return nil, fmt.Errorf("find tutor for schedule: %w", err)
+	}
+	return &tutor, nil
+}
+
+func (r *ScheduleRepository) FindStudentForSchedule(ctx context.Context, id uuid.UUID) (*models.Student, error) {
+	var student models.Student
+	if err := r.db.WithContext(ctx).Preload("Parent").First(&student, "id = ?", id).Error; err != nil {
+		return nil, fmt.Errorf("find student for schedule: %w", err)
+	}
+	return &student, nil
+}
+
+func (r *ScheduleRepository) CreateSchedule(ctx context.Context, schedule *models.Schedule) (*models.Schedule, error) {
+	if err := r.db.WithContext(ctx).Create(schedule).Error; err != nil {
+		return nil, fmt.Errorf("create schedule: %w", err)
+	}
+	if err := r.db.WithContext(ctx).
+		Preload("Tutor.User").
+		Preload("Student.Parent").
+		First(schedule, "id = ?", schedule.ID).Error; err != nil {
+		return nil, fmt.Errorf("reload schedule: %w", err)
+	}
+	return schedule, nil
+}
+
+func (r *ScheduleRepository) SetScheduleActive(ctx context.Context, scheduleID uuid.UUID, isActive bool) (*models.Schedule, error) {
+	var schedule models.Schedule
+	if err := r.db.WithContext(ctx).First(&schedule, "id = ?", scheduleID).Error; err != nil {
+		return nil, fmt.Errorf("find schedule by id: %w", err)
+	}
+	schedule.IsActive = isActive
+	if err := r.db.WithContext(ctx).Save(&schedule).Error; err != nil {
+		return nil, fmt.Errorf("set schedule active: %w", err)
+	}
+	return &schedule, nil
 }
 
 type ActivityLogRepository struct {

@@ -25,16 +25,19 @@ const (
 )
 
 const (
-	ActivityLogin       = "login"
-	ActivityAssignRole  = "assign_role"
-	ActivityVerifyTutor = "verify_tutor"
-	ActivityAssignTutor = "assign_tutor"
+	ActivityLogin                = "login"
+	ActivityAssignRole           = "assign_role"
+	ActivityVerifyTutor          = "verify_tutor"
+	ActivityAssignTutor          = "assign_tutor"
+	ActivityCreateSchedule       = "create_schedule"
+	ActivityUpdateScheduleStatus = "update_schedule_status"
 )
 
 const (
-	EntityStudent = "student"
-	EntityTutor   = "tutor"
-	EntityUser    = "user"
+	EntityStudent  = "student"
+	EntityTutor    = "tutor"
+	EntityUser     = "user"
+	EntitySchedule = "schedule"
 )
 
 type Role struct {
@@ -83,6 +86,7 @@ type Tutor struct {
 	CreatedAt  time.Time
 	UpdatedAt  time.Time
 	Students   []Student `gorm:"foreignKey:AssignedTutorID"`
+	Schedules  []Schedule
 }
 
 func (t *Tutor) BeforeCreate(_ *gorm.DB) error {
@@ -103,6 +107,7 @@ type Student struct {
 	AssignedTutor   *Tutor     `gorm:"foreignKey:AssignedTutorID"`
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
+	Schedules       []Schedule
 }
 
 func (s *Student) BeforeCreate(_ *gorm.DB) error {
@@ -110,6 +115,58 @@ func (s *Student) BeforeCreate(_ *gorm.DB) error {
 		s.ID = uuid.New()
 	}
 	return nil
+}
+
+type Schedule struct {
+	ID        uuid.UUID `gorm:"type:uuid;default:gen_random_uuid();primaryKey"`
+	TutorID   uuid.UUID `gorm:"type:uuid;not null;index"`
+	Tutor     Tutor     `gorm:"foreignKey:TutorID"`
+	StudentID uuid.UUID `gorm:"type:uuid;not null;index"`
+	Student   Student   `gorm:"foreignKey:StudentID"`
+	Subject   *string   `gorm:"type:varchar(100)"`
+	DayOfWeek int       `gorm:"not null"`
+	StartTime string    `gorm:"type:varchar(5);not null"`
+	EndTime   string    `gorm:"type:varchar(5);not null"`
+	Location  *string   `gorm:"type:varchar(255)"`
+	IsActive  bool      `gorm:"default:true;not null;index"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
+}
+
+func (s *Schedule) BeforeCreate(_ *gorm.DB) error {
+	if s.ID == uuid.Nil {
+		s.ID = uuid.New()
+	}
+	return nil
+}
+
+func (s Schedule) DayLabel() string {
+	days := []string{"Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"}
+	if s.DayOfWeek < 0 || s.DayOfWeek >= len(days) {
+		return "-"
+	}
+	return days[s.DayOfWeek]
+}
+
+func (s Schedule) SubjectLabel() string {
+	if s.Subject == nil || *s.Subject == "" {
+		return "-"
+	}
+	return *s.Subject
+}
+
+func (s Schedule) LocationLabel() string {
+	if s.Location == nil || *s.Location == "" {
+		return "-"
+	}
+	return *s.Location
+}
+
+func (s Schedule) StatusLabel() string {
+	if s.IsActive {
+		return "Aktif"
+	}
+	return "Nonaktif"
 }
 
 type Session struct {

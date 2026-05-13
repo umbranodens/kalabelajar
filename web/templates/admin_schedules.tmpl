@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="id">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{{ .Title }}</title><link rel="stylesheet" href="/static/css/app.css"></head>
+<body class="dashboard-page">
+  <aside class="sidebar"><div class="brand-mark light">Kala Belajar</div><nav><a href="/dashboard">Dashboard</a><a href="/admin/users">User</a><a href="/admin/tutors">Tutor</a><a href="/admin/students">Murid</a><a class="active" href="/admin/schedules">Jadwal</a><a href="/admin/activity">Activity Log</a></nav></aside>
+  <main class="dashboard-main">
+    <header class="topbar"><div><p class="eyebrow">Super Admin</p><h1>Manajemen Jadwal</h1></div></header>
+    <section class="content-panel">
+      <form class="filter-bar" method="get"><select name="status"><option value="">Semua status</option><option value="active">Aktif</option><option value="inactive">Nonaktif</option></select><button type="submit">Filter</button></form>
+      {{ if .Error }}<div class="alert error">{{ .Error }}</div>{{ end }}
+      <form class="schedule-form" method="post" action="/admin/schedules">
+        <label>Tutor<select name="tutor_id" required>{{ range .Tutors }}<option value="{{ .ID }}">{{ .User.Name }}</option>{{ end }}</select></label>
+        <label>Murid<select name="student_id" required>{{ range .Students }}<option value="{{ .ID }}">{{ .Name }} - {{ if .AssignedTutor }}{{ .AssignedTutor.User.Name }}{{ else }}Belum Ada Tutor{{ end }}</option>{{ end }}</select></label>
+        <label>Subject<input type="text" name="subject" placeholder="Matematika"></label>
+        <label>Hari<select name="day_of_week" required><option value="1">Senin</option><option value="2">Selasa</option><option value="3">Rabu</option><option value="4">Kamis</option><option value="5">Jumat</option><option value="6">Sabtu</option><option value="0">Minggu</option></select></label>
+        <label>Mulai<input type="time" name="start_time" required></label>
+        <label>Selesai<input type="time" name="end_time" required></label>
+        <label>Lokasi<input type="text" name="location" placeholder="Online / rumah murid"></label>
+        <button type="submit">Tambah Jadwal</button>
+      </form>
+      {{ if .Schedules }}
+      <div class="table-wrap"><table><thead><tr><th>Tutor</th><th>Murid</th><th>Subject</th><th>Hari</th><th>Jam</th><th>Lokasi</th><th>Status</th><th>Aksi</th></tr></thead><tbody>
+        {{ range .Schedules }}
+        <tr><td>{{ .Tutor.User.Name }}</td><td>{{ .Student.Name }}</td><td>{{ .SubjectLabel }}</td><td>{{ .DayLabel }}</td><td>{{ .StartTime }} - {{ .EndTime }}</td><td>{{ .LocationLabel }}</td><td>{{ .StatusLabel }}</td><td><form method="post" action="/admin/schedules/{{ .ID }}/active">{{ if .IsActive }}<input type="hidden" name="is_active" value="false"><button type="submit">Nonaktifkan</button>{{ else }}<input type="hidden" name="is_active" value="true"><button type="submit">Aktifkan</button>{{ end }}</form></td></tr>
+        {{ end }}
+      </tbody></table></div>
+      {{ else }}
+      <div class="empty-state">Belum ada jadwal yang cocok dengan filter.</div>
+      {{ end }}
+    </section>
+  </main>
+</body>
+</html>

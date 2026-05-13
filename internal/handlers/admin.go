@@ -16,10 +16,11 @@ type AdminHandler struct {
 	db         *gorm.DB
 	admin      *services.AdminService
 	assignment *services.AssignmentService
+	schedules  *services.ScheduleService
 }
 
-func NewAdminHandler(db *gorm.DB, admin *services.AdminService, assignment *services.AssignmentService) *AdminHandler {
-	return &AdminHandler{db: db, admin: admin, assignment: assignment}
+func NewAdminHandler(db *gorm.DB, admin *services.AdminService, assignment *services.AssignmentService, schedules *services.ScheduleService) *AdminHandler {
+	return &AdminHandler{db: db, admin: admin, assignment: assignment, schedules: schedules}
 }
 
 func (h *AdminHandler) RegisterRoutes(router *gin.Engine) {
@@ -31,31 +32,61 @@ func (h *AdminHandler) RegisterRoutes(router *gin.Engine) {
 	admin.POST("/tutors/:id/verify", h.VerifyTutor)
 	admin.GET("/students", h.Students)
 	admin.POST("/students/:id/assign", h.AssignTutor)
+	admin.GET("/schedules", h.AdminSchedules)
+	admin.POST("/schedules", h.CreateSchedule)
+	admin.POST("/schedules/:id/active", h.SetScheduleActive)
 	admin.GET("/activity", h.Activity)
+	router.GET("/tutor/schedules", middleware.RequireRoles(models.RoleIDTutor), h.TutorSchedules)
+	router.GET("/parent/schedules", middleware.RequireRoles(models.RoleIDParent), h.ParentSchedules)
 }
 
 func (h *AdminHandler) Dashboard(c *gin.Context) {
 	user, _ := middleware.CurrentUser(c)
 	if user.RoleID == nil || *user.RoleID != models.RoleIDSuperAdmin {
-		c.HTML(http.StatusOK, "dashboard.tmpl", gin.H{"Title": "Dashboard - Kala Belajar", "User": user, "RoleLabel": roleLabel(user.RoleID)})
+		data := gin.H{"Title": "Dashboard - Kala Belajar", "User": user, "RoleLabel": roleLabel(user.RoleID)}
+		if user.RoleID != nil && *user.RoleID == models.RoleIDTutor {
+			var tutor models.Tutor
+			if err := h.db.Where("user_id = ?", user.ID).First(&tutor).Error; err == nil {
+				var scheduleCount, studentCount int64
+				h.db.Model(&models.Schedule{}).Where("tutor_id = ? AND is_active = ?", tutor.ID, true).Count(&scheduleCount)
+				h.db.Model(&models.Student{}).Where("assigned_tutor_id = ?", tutor.ID).Count(&studentCount)
+				data["IsTutor"] = true
+				data["ScheduleCount"] = scheduleCount
+				data["StudentCount"] = studentCount
+			}
+		}
+		if user.RoleID != nil && *user.RoleID == models.RoleIDParent {
+			var childCount, scheduleCount int64
+			h.db.Model(&models.Student{}).Where("parent_id = ?", user.ID).Count(&childCount)
+			h.db.Model(&models.Schedule{}).
+				Joins("JOIN students ON students.id = schedules.student_id").
+				Where("students.parent_id = ? AND schedules.is_active = ?", user.ID, true).
+				Count(&scheduleCount)
+			data["IsParent"] = true
+			data["ChildCount"] = childCount
+			data["ScheduleCount"] = scheduleCount
+		}
+		c.HTML(http.StatusOK, "dashboard.tmpl", data)
 		return
 	}
-	var totalTutors, totalStudents, totalParents, pendingTutors, activities int64
+	var totalTutors, totalStudents, totalParents, pendingTutors, activeSchedules, activities int64
 	h.db.Model(&models.Tutor{}).Count(&totalTutors)
 	h.db.Model(&models.Student{}).Count(&totalStudents)
 	h.db.Model(&models.User{}).Where("role_id = ?", models.RoleIDParent).Count(&totalParents)
 	h.db.Model(&models.Tutor{}).Where("is_verified = ?", false).Count(&pendingTutors)
+	h.db.Model(&models.Schedule{}).Where("is_active = ?", true).Count(&activeSchedules)
 	h.db.Model(&models.ActivityLog{}).Count(&activities)
 	c.HTML(http.StatusOK, "dashboard.tmpl", gin.H{
-		"Title":         "Dashboard - Kala Belajar",
-		"User":          user,
-		"RoleLabel":     "Super Admin",
-		"IsSuperAdmin":  true,
-		"TotalTutors":   totalTutors,
-		"TotalStudents": totalStudents,
-		"TotalParents":  totalParents,
-		"PendingTutors": pendingTutors,
-		"ActivityCount": activities,
+		"Title":           "Dashboard - Kala Belajar",
+		"User":            user,
+		"RoleLabel":       "Super Admin",
+		"IsSuperAdmin":    true,
+		"TotalTutors":     totalTutors,
+		"TotalStudents":   totalStudents,
+		"TotalParents":    totalParents,
+		"PendingTutors":   pendingTutors,
+		"ActiveSchedules": activeSchedules,
+		"ActivityCount":   activities,
 	})
 }
 
@@ -149,6 +180,108 @@ func (h *AdminHandler) AssignTutor(c *gin.Context) {
 		_, _ = h.assignment.AssignTutorToStudent(c.Request.Context(), services.AssignTutorInput{ActorUserID: user.ID, StudentID: studentID, TutorID: tutorID, IPAddress: c.ClientIP()})
 	}
 	c.Redirect(http.StatusFound, "/admin/students")
+}
+
+func (h *AdminHandler) AdminSchedules(c *gin.Context) {
+	h.renderAdminSchedules(c, http.StatusOK, "")
+}
+
+func (h *AdminHandler) CreateSchedule(c *gin.Context) {
+	user, _ := middleware.CurrentUser(c)
+	tutorID, tutorErr := uuid.Parse(c.PostForm("tutor_id"))
+	studentID, studentErr := uuid.Parse(c.PostForm("student_id"))
+	dayOfWeek, dayErr := strconv.Atoi(c.PostForm("day_of_week"))
+	if tutorErr != nil || studentErr != nil || dayErr != nil {
+		h.renderAdminSchedules(c, http.StatusBadRequest, "Tutor, murid, dan hari wajib dipilih dengan benar.")
+		return
+	}
+	_, err := h.schedules.CreateSchedule(c.Request.Context(), services.CreateScheduleInput{
+		ActorUserID: user.ID,
+		TutorID:     tutorID,
+		StudentID:   studentID,
+		Subject:     c.PostForm("subject"),
+		DayOfWeek:   dayOfWeek,
+		StartTime:   c.PostForm("start_time"),
+		EndTime:     c.PostForm("end_time"),
+		Location:    c.PostForm("location"),
+		IPAddress:   c.ClientIP(),
+	})
+	if err != nil {
+		h.renderAdminSchedules(c, http.StatusBadRequest, "Jadwal belum bisa disimpan. Pastikan tutor aktif dan terverifikasi, murid sudah di-assign ke tutor itu, hari valid, dan jam selesai setelah jam mulai.")
+		return
+	}
+	c.Redirect(http.StatusFound, "/admin/schedules")
+}
+
+func (h *AdminHandler) SetScheduleActive(c *gin.Context) {
+	user, _ := middleware.CurrentUser(c)
+	id, err := uuid.Parse(c.Param("id"))
+	if err == nil {
+		isActive, _ := strconv.ParseBool(c.PostForm("is_active"))
+		_ = h.schedules.SetScheduleActive(c.Request.Context(), services.SetScheduleActiveInput{ActorUserID: user.ID, ScheduleID: id, IsActive: isActive, IPAddress: c.ClientIP()})
+	}
+	c.Redirect(http.StatusFound, "/admin/schedules")
+}
+
+func (h *AdminHandler) TutorSchedules(c *gin.Context) {
+	user, _ := middleware.CurrentUser(c)
+	var tutor models.Tutor
+	if err := h.db.Where("user_id = ?", user.ID).First(&tutor).Error; err != nil {
+		c.HTML(http.StatusOK, "role_schedules.tmpl", gin.H{"Title": "Jadwal Saya", "User": user, "RoleLabel": "Tutor", "Schedules": []models.Schedule{}})
+		return
+	}
+	var schedules []models.Schedule
+	h.db.Preload("Tutor.User").
+		Preload("Student.Parent").
+		Where("tutor_id = ? AND is_active = ?", tutor.ID, true).
+		Order("day_of_week asc, start_time asc").
+		Find(&schedules)
+	c.HTML(http.StatusOK, "role_schedules.tmpl", gin.H{"Title": "Jadwal Saya", "User": user, "RoleLabel": "Tutor", "Schedules": schedules, "ScheduleTitle": "Jadwal Saya", "EmptyText": "Belum ada jadwal hari ini."})
+}
+
+func (h *AdminHandler) ParentSchedules(c *gin.Context) {
+	user, _ := middleware.CurrentUser(c)
+	var schedules []models.Schedule
+	h.db.Preload("Tutor.User").
+		Preload("Student.Parent").
+		Joins("JOIN students ON students.id = schedules.student_id").
+		Where("students.parent_id = ? AND schedules.is_active = ?", user.ID, true).
+		Order("schedules.day_of_week asc, schedules.start_time asc").
+		Find(&schedules)
+	c.HTML(http.StatusOK, "role_schedules.tmpl", gin.H{"Title": "Jadwal Les Anak", "User": user, "RoleLabel": "Parent", "Schedules": schedules, "ScheduleTitle": "Jadwal Les Anak", "EmptyText": "Belum ada jadwal anak yang aktif."})
+}
+
+func (h *AdminHandler) renderAdminSchedules(c *gin.Context, status int, errorMessage string) {
+	var schedules []models.Schedule
+	query := h.db.Preload("Tutor.User").Preload("Student.Parent").Order("day_of_week asc, start_time asc")
+	if state := c.Query("status"); state == "active" {
+		query = query.Where("is_active = ?", true)
+	} else if state == "inactive" {
+		query = query.Where("is_active = ?", false)
+	}
+	query.Find(&schedules)
+
+	var tutors []models.Tutor
+	h.db.Preload("User").
+		Joins("JOIN users ON users.id = tutors.user_id").
+		Where("tutors.is_verified = ? AND users.is_active = ?", true, true).
+		Order("users.name asc").
+		Find(&tutors)
+
+	var students []models.Student
+	h.db.Preload("Parent").Preload("AssignedTutor").Preload("AssignedTutor.User").
+		Where("assigned_tutor_id IS NOT NULL").
+		Order("name asc").
+		Find(&students)
+
+	c.HTML(status, "admin_schedules.tmpl", gin.H{
+		"Title":     "Manajemen Jadwal",
+		"Schedules": schedules,
+		"Tutors":    tutors,
+		"Students":  students,
+		"Error":     errorMessage,
+		"Query":     c.Request.URL.Query(),
+	})
 }
 
 func (h *AdminHandler) Activity(c *gin.Context) {

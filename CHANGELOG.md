@@ -1,5 +1,24 @@
 # Changelog
 
+## 2026-05-13 - Scheduling foundation
+
+### Added
+- Added `schedules` model, migration registration, labels, repository methods, and local seed schedules.
+- Added schedule service validation for tutor eligibility, student assignment, day of week, `HH:MM` time format, and end time after start time.
+- Added Super Admin schedule list, create form, active/inactive filter, and status toggle with activity logging.
+- Added Tutor `Jadwal Saya` and Parent `Jadwal Les Anak` views filtered by backend ownership and active schedule status.
+- Added schedule metrics and navigation links to role dashboards.
+
+### Tested
+- Ran red `go test ./internal/services -run TestScheduleService` before implementation.
+- Ran `go test ./...` successfully.
+- Ran `go run ./cmd/seed` successfully.
+- Browser-tested Super Admin schedule list, invalid time validation, valid schedule creation, schedule inactivation, activity log entries, Tutor active-own schedule visibility, Parent active-child schedule visibility, and mobile Tutor/Parent schedule pages.
+
+### Notes
+- `psql` and Node `pg` were unavailable for a direct CLI SQL count, so DB write state was verified through the browser-backed create/inactivate flow and visible persisted rows.
+- Lesson sessions and reports remain pending for Phase 4.
+
 ## 2026-05-13 - Super Admin core management
 
 ### Added

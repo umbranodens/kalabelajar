@@ -89,15 +89,18 @@ label {
   font-weight: 800;
 }
 
-input {
+input,
+select {
   width: 100%;
   border: 1px solid var(--line);
   border-radius: 8px;
   padding: 12px 14px;
   font: inherit;
+  background: var(--white);
 }
 
-input:focus {
+input:focus,
+select:focus {
   border-color: var(--primary-teal);
   outline: 3px solid rgba(0, 189, 168, 0.18);
 }
@@ -285,6 +288,36 @@ a {
   min-width: 180px;
 }
 
+.schedule-form {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  margin: 18px 0 24px;
+  padding: 16px;
+}
+
+.schedule-form button {
+  align-self: end;
+  min-height: 47px;
+}
+
+.schedule-card-list {
+  display: grid;
+  gap: 14px;
+}
+
+.schedule-card {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.schedule-card p {
+  margin: 8px 0;
+}
+
 .table-wrap {
   overflow-x: auto;
 }
@@ -324,5 +357,9 @@ th {
   .topbar {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .mobile-role .content-panel {
+    padding: 20px;
   }
 }

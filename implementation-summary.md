@@ -1,5 +1,18 @@
 # Implementation Summary
 
+## 2026-05-13 13:18 - Scheduling foundation
+
+- Branch: `master`
+- Commit: pending before commit; final pushed hash reported after Git creates it
+- Pushed: pending
+- Implemented: `schedules` model/migration, schedule service validation, repository methods, local seed active/inactive schedules, Super Admin schedule list/create/filter/status toggle, activity logging for schedule create/status updates, Tutor active-own schedule view, Parent active-child schedule view, and schedule dashboard metrics/links.
+- Files changed: `cmd/server/main.go`, `internal/models/core_data.go`, `internal/database/database.go`, `internal/database/database_test.go`, `internal/repositories/core_data.go`, `internal/services/schedule_service.go`, `internal/services/schedule_service_test.go`, `internal/handlers/admin.go`, `internal/seed/local.go`, `web/templates/dashboard.tmpl`, `web/templates/admin_schedules.tmpl`, `web/templates/role_schedules.tmpl`, `web/templates/admin_users.tmpl`, `web/templates/admin_tutors.tmpl`, `web/templates/admin_students.tmpl`, `web/templates/admin_activity.tmpl`, `web/static/css/app.css`, `docs/superpowers/plans/2026-05-13-scheduling.md`, `CHANGELOG.md`, `implementation-summary.md`.
+- Automated tests: Initial red `go test ./internal/services -run TestScheduleService` failed because schedule service/model/constants did not exist. After implementation, `go test ./internal/services -run TestScheduleService` and `go test ./...` passed.
+- Browser/manual tests: `go run ./cmd/seed` passed. Browser QA passed for Super Admin login, dashboard `Jadwal Aktif` metric, schedule list with active/inactive rows, invalid end-before-start validation, valid schedule creation, schedule inactivation, schedule activity logs, Tutor active-own schedule page, Parent active-child schedule page, and mobile Tutor/Parent dashboard/schedule views.
+- Verified test cases: `TC-SA-1.1`, `TC-SA-7.1`, `TC-SA-7.2`, `TC-SA-7.3`, `TC-SA-7.4`, `TC-SA-8.1`, `TC-SA-8.3`, Tutor `AC 5.1`, Tutor `AC 5.2`, Parent `AC 6.1`, Parent `AC 6.2`.
+- Known issues: Direct SQL CLI verification could not be run because `psql` and Node `pg` are unavailable in the workspace runtime. Lesson sessions and reports are still pending.
+- Next steps: Implement Phase 4 lesson sessions and lesson reports with Tutor report form and Parent published-report visibility.
+
 ## 2026-05-13 13:01 - Super Admin core management
 
 - Branch: `master`
