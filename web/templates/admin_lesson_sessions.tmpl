@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="id">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{{ .Title }}</title><link rel="stylesheet" href="/static/css/app.css"></head>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{{ .Title }}</title><link rel="stylesheet" href="/static/css/app.css"><script defer src="/static/js/app.js"></script></head>
 <body class="dashboard-page">
   <aside class="sidebar"><div class="brand-mark light">Kala Belajar</div><nav><a href="/dashboard">Dashboard</a><a href="/admin/users">User</a><a href="/admin/tutors">Tutor</a><a href="/admin/students">Murid</a><a href="/admin/schedules">Jadwal</a><a class="active" href="/admin/lesson-sessions">Sesi & Laporan</a><a href="/admin/activity">Activity Log</a></nav></aside>
   <main class="dashboard-main">
@@ -10,7 +10,7 @@
       {{ if .Sessions }}
       <div class="table-wrap"><table><thead><tr><th>Tanggal</th><th>Tutor</th><th>Murid</th><th>Subject</th><th>Status</th><th>Laporan</th><th>Detail</th></tr></thead><tbody>
         {{ range .Sessions }}
-        <tr><td>{{ .DateLabel }}<br>{{ .TimeLabel }}</td><td>{{ .Tutor.User.Name }}</td><td>{{ .Student.Name }}</td><td>{{ .SubjectLabel }}</td><td>{{ .StatusLabel }}</td><td>{{ .NeedsReportLabel }}</td><td><a href="/admin/lesson-sessions/{{ .ID }}">Buka detail</a></td></tr>
+        <tr><td>{{ .DateLabel }}<br>{{ .TimeLabel }}</td><td>{{ .Tutor.User.Name }}</td><td>{{ .Student.Name }}</td><td>{{ .SubjectLabel }}</td><td><span class="status-badge status-{{ .Status }}">{{ .StatusLabel }}</span></td><td>{{ if .Report }}{{ if .Report.PublishedAt }}<span class="status-badge status-published">Terbit</span>{{ else }}<span class="status-badge status-draft">Draft</span>{{ end }}{{ else }}<span class="status-badge status-missing">Laporan belum tersedia</span>{{ end }}</td><td><a href="/admin/lesson-sessions/{{ .ID }}">Buka detail</a></td></tr>
         {{ end }}
       </tbody></table></div>
       {{ else }}

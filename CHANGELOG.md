@@ -1,5 +1,25 @@
 # Changelog
 
+## 2026-05-13 - UX polish
+
+### Added
+- Added lightweight submit/loading feedback for forms.
+- Added status badges for lesson session and report states.
+- Added sticky mobile submit behavior for the Tutor report form.
+
+### Changed
+- Improved mobile readability for Tutor report and Parent progress surfaces.
+- Improved Super Admin session monitoring scanability with visual status labels.
+
+### Tested
+- Ran `go test ./...` successfully.
+- Ran `go run ./cmd/seed` successfully.
+- Browser-tested desktop Super Admin status badges and JS loading.
+- Browser-tested mobile Tutor report sticky action and mobile Parent report visibility.
+
+### Notes
+- This is a focused MVP polish pass. Larger design-system extraction and full HTMX partial updates can be added later.
+
 ## 2026-05-13 - Lesson sessions and reports
 
 ### Added

@@ -1,5 +1,18 @@
 # Implementation Summary
 
+## 2026-05-13 16:24 - UX polish
+
+- Branch: `master`
+- Commit: pending before commit; final pushed hash reported after Git creates it
+- Pushed: pending
+- Implemented: form submit/loading feedback, lesson/session report status badges, sticky Tutor report submit action on mobile, and readability polish for report/session screens.
+- Files changed: `web/static/css/app.css`, `web/static/js/app.js`, `web/templates/dashboard.tmpl`, `web/templates/admin_lesson_sessions.tmpl`, `web/templates/admin_lesson_session_detail.tmpl`, `web/templates/tutor_sessions.tmpl`, `web/templates/tutor_report_form.tmpl`, `web/templates/parent_reports.tmpl`, `CHANGELOG.md`, `implementation-summary.md`.
+- Automated tests: `go test ./...` passed.
+- Browser/manual tests: `go run ./cmd/seed` passed. Browser QA passed for desktop Super Admin status badges and JS load, mobile Tutor report sticky submit, and mobile Parent published-report visibility.
+- Verified test cases: Phase 5 responsive dashboard/report polish checks, plus regression coverage for `TC-SA-14.*`, Tutor report form mobile usability, and Parent published-report visibility.
+- Known issues: Full HTMX partial-update behavior is still minimal in this MVP; current flows are server-rendered forms with progressive browser feedback.
+- Next steps: Manual acceptance pass using `manual-test-walkthrough.md`.
+
 ## 2026-05-13 16:15 - Lesson sessions and reports
 
 - Branch: `master`

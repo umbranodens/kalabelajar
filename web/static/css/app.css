@@ -121,6 +121,11 @@ button:hover {
   background: var(--teal-dark);
 }
 
+button:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
 button.secondary {
   background: var(--white);
   color: var(--deep-blue);
@@ -134,6 +139,39 @@ button.secondary {
   display: inline-block;
   padding: 10px 14px;
   text-decoration: none;
+}
+
+.status-badge {
+  border-radius: 999px;
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 5px 9px;
+}
+
+.status-scheduled,
+.status-draft {
+  background: #eef4ff;
+  color: var(--deep-blue);
+}
+
+.status-completed,
+.status-published {
+  background: rgba(0, 189, 168, 0.15);
+  color: #00786e;
+}
+
+.status-canceled,
+.status-missing {
+  background: rgba(255, 59, 79, 0.12);
+  color: #9f1020;
+}
+
+.status-student_absent,
+.status-follow_up_required,
+.status-rescheduled {
+  background: #fff4db;
+  color: #815200;
 }
 
 .google-button {
@@ -350,6 +388,11 @@ a {
   gap: 16px;
 }
 
+.report-form button {
+  bottom: 14px;
+  position: sticky;
+}
+
 .inline-check {
   align-items: center;
   display: flex;
@@ -403,5 +446,10 @@ th {
 
   .mobile-role .content-panel {
     padding: 20px;
+  }
+
+  th,
+  td {
+    padding: 10px;
   }
 }

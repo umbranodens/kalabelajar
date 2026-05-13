@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="id">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{{ .Title }}</title><link rel="stylesheet" href="/static/css/app.css"></head>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{{ .Title }}</title><link rel="stylesheet" href="/static/css/app.css"><script defer src="/static/js/app.js"></script></head>
 <body class="dashboard-page mobile-role">
   <aside class="sidebar"><div class="brand-mark light">Kala Belajar</div><nav><a href="/dashboard">Dashboard</a><a href="/tutor/schedules">Jadwal Saya</a><a class="active" href="/tutor/sessions">Riwayat Mengajar</a></nav></aside>
   <main class="dashboard-main">
@@ -10,9 +10,9 @@
       <div class="schedule-card-list">
         {{ range .Sessions }}
         <article class="schedule-card">
-          <div><p class="eyebrow">{{ .DateLabel }} · {{ .StatusLabel }}</p><h2>{{ .Student.Name }}</h2></div>
+          <div><p class="eyebrow">{{ .DateLabel }} · <span class="status-badge status-{{ .Status }}">{{ .StatusLabel }}</span></p><h2>{{ .Student.Name }}</h2></div>
           <p><strong>{{ .SubjectLabel }}</strong> · {{ .TimeLabel }}</p>
-          <p class="muted">{{ .NeedsReportLabel }}</p>
+          <p class="muted">{{ if .Report }}{{ if .Report.PublishedAt }}<span class="status-badge status-published">Terbit</span>{{ else }}<span class="status-badge status-draft">Draft</span>{{ end }}{{ else }}<span class="status-badge status-missing">Laporan belum tersedia</span>{{ end }}</p>
           <a class="button-link" href="/tutor/sessions/{{ .ID }}/report">Isi Laporan</a>
         </article>
         {{ end }}
