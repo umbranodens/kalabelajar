@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026-05-13 - Admin sidebar icon consistency
+
+### Fixed
+- Standardized Super Admin sidebar icons across admin pages so the icon column matches between `/admin/tutors`, `/admin/schedules`, `/admin/lesson-sessions`, `/admin/students`, and `/admin/activity`.
+
+### Tested
+- Ran `go test ./...` successfully.
+- Browser-checked `/admin/tutors`, `/admin/schedules`, and `/admin/lesson-sessions` sidebar previews.
+
+### Notes
+- This fix was committed only after manual audit approval.
+
 ## 2026-05-13 - Activity log timestamp format
 
 ### Fixed
