@@ -79,6 +79,19 @@
   transition: opacity 0.25s ease;
 }
 
+/* Keep the sidebar brand visually identical across dashboard pages. */
+#sidebar-drawer > div:first-child {
+  min-height: 70px;
+  display: flex;
+  align-items: center;
+  padding: 0 20px !important;
+}
+
+#sidebar-drawer > div:first-child > span {
+  display: block;
+  line-height: 1;
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
