@@ -3,8 +3,8 @@
 ## 2026-05-13 13:18 - Scheduling foundation
 
 - Branch: `master`
-- Commit: pending before commit; final pushed hash reported after Git creates it
-- Pushed: pending
+- Commit: `0279d1c` (`feat: add schedule management`)
+- Pushed: yes, to `origin/master`
 - Implemented: `schedules` model/migration, schedule service validation, repository methods, local seed active/inactive schedules, Super Admin schedule list/create/filter/status toggle, activity logging for schedule create/status updates, Tutor active-own schedule view, Parent active-child schedule view, and schedule dashboard metrics/links.
 - Files changed: `cmd/server/main.go`, `internal/models/core_data.go`, `internal/database/database.go`, `internal/database/database_test.go`, `internal/repositories/core_data.go`, `internal/services/schedule_service.go`, `internal/services/schedule_service_test.go`, `internal/handlers/admin.go`, `internal/seed/local.go`, `web/templates/dashboard.tmpl`, `web/templates/admin_schedules.tmpl`, `web/templates/role_schedules.tmpl`, `web/templates/admin_users.tmpl`, `web/templates/admin_tutors.tmpl`, `web/templates/admin_students.tmpl`, `web/templates/admin_activity.tmpl`, `web/static/css/app.css`, `docs/superpowers/plans/2026-05-13-scheduling.md`, `CHANGELOG.md`, `implementation-summary.md`.
 - Automated tests: Initial red `go test ./internal/services -run TestScheduleService` failed because schedule service/model/constants did not exist. After implementation, `go test ./internal/services -run TestScheduleService` and `go test ./...` passed.
