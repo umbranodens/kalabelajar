@@ -3,8 +3,8 @@
 ## 2026-05-13 11:45 - Foundation scaffold
 
 - Branch: `master`
-- Commit: pending before commit; final pushed hash reported after Git creates it
-- Pushed: pending
+- Commit: `127b4a9` (`chore: scaffold go app`)
+- Pushed: yes, to `origin/master`
 - Implemented: Go module setup, config loader, PostgreSQL database helper, Gin server scaffold with `/healthz`, seed command placeholder, requested app directories, `.env.example`, `.gitignore`, and first-slice plan.
 - Files changed: `.env.example`, `.gitignore`, `CHANGELOG.md`, `Tech Spec Kalabelajar.md`, `cmd/server/main.go`, `cmd/seed/main.go`, `docs/superpowers/plans/2026-05-13-foundation-scaffold.md`, `go.mod`, `go.sum`, `internal/config/*`, `internal/database/*`, placeholder folders under `internal/*` and `web/*`.
 - Automated tests: `go test ./...` passed. Initial red runs failed first for missing test dependency, then correctly failed because `internal/config` and `internal/database` had no non-test implementation files.
