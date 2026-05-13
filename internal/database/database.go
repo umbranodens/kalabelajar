@@ -3,9 +3,11 @@ package database
 import (
 	"context"
 	"fmt"
+	"reflect"
 	"time"
 
 	"github.com/umbranodens/kalabelajar/internal/config"
+	"github.com/umbranodens/kalabelajar/internal/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -42,6 +44,40 @@ func Ping(ctx context.Context, db *gorm.DB) error {
 
 	if err := sqlDB.PingContext(pingCtx); err != nil {
 		return fmt.Errorf("ping database: %w", err)
+	}
+
+	return nil
+}
+
+func MigrationModels() []any {
+	return []any{
+		&models.Role{},
+		&models.User{},
+		&models.Tutor{},
+		&models.Student{},
+		&models.ActivityLog{},
+	}
+}
+
+func MigrationModelNames() []string {
+	migrationModels := MigrationModels()
+	names := make([]string, 0, len(migrationModels))
+	for _, model := range migrationModels {
+		modelType := reflect.Indirect(reflect.ValueOf(model)).Type()
+		names = append(names, modelType.Name())
+	}
+	return names
+}
+
+func Migrate(db *gorm.DB) error {
+	if db.Dialector.Name() == "postgres" {
+		if err := db.Exec("CREATE EXTENSION IF NOT EXISTS pgcrypto").Error; err != nil {
+			return fmt.Errorf("ensure pgcrypto extension: %w", err)
+		}
+	}
+
+	if err := db.AutoMigrate(MigrationModels()...); err != nil {
+		return fmt.Errorf("auto migrate core data models: %w", err)
 	}
 
 	return nil

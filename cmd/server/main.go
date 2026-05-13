@@ -24,6 +24,9 @@ func main() {
 	if err := database.Ping(context.Background(), db); err != nil {
 		log.Fatalf("database health check failed: %v", err)
 	}
+	if err := database.Migrate(db); err != nil {
+		log.Fatalf("database migration failed: %v", err)
+	}
 
 	router := gin.Default()
 	router.Static("/static", "./web/static")

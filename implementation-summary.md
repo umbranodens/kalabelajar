@@ -1,5 +1,18 @@
 # Implementation Summary
 
+## 2026-05-13 11:50 - Core data foundation
+
+- Branch: `master`
+- Commit: pending before commit; final pushed hash reported after Git creates it
+- Pushed: pending
+- Implemented: Core GORM models for roles, users, tutors, students, and activity logs; UUID creation hooks; migration model registration; startup migration execution; GORM repositories for core data; assignment service enforcing verified active tutor assignment; activity log creation for assignment.
+- Files changed: `cmd/server/main.go`, `go.mod`, `go.sum`, `internal/database/*`, `internal/models/core_data.go`, `internal/models/core_data_test.go`, `internal/repositories/core_data.go`, `internal/services/assignment_service.go`, `internal/services/assignment_service_test.go`, `docs/superpowers/plans/2026-05-13-core-data-foundation.md`, `CHANGELOG.md`, `implementation-summary.md`.
+- Automated tests: `go test ./...` passed. Initial red run failed because `github.com/google/uuid`, `database.MigrationModelNames`, models, and assignment service APIs were missing.
+- Browser/manual tests: Started `go run ./cmd/server` with database migrations enabled; `Invoke-WebRequest http://localhost:8080/healthz` returned `200 ok`.
+- Verified test cases: Partially supports backend prerequisites for `TC-SA-6.1`, `TC-SA-6.2`, `TC-SA-6.3`, and `TC-SA-8.3`; UI/browser flows are not verified yet because auth-gated Super Admin pages are not implemented.
+- Known issues: Phase 1 auth/RBAC/UI remains incomplete, so Phase 2 browser CRUD test cases cannot run end-to-end yet. The in-app browser still blocks local URLs, so local HTTP verification is used for server smoke tests.
+- Next steps: Add Phase 1 auth/RBAC and seed data, or continue Phase 2 with Super Admin core-data handlers once auth scaffolding exists.
+
 ## 2026-05-13 11:45 - Foundation scaffold
 
 - Branch: `master`
