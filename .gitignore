@@ -12,3 +12,10 @@ coverage.out
 .DS_Store
 .idea/
 .vscode/
+
+# Local project notes and agent working docs
+docs/superpowers/plans/
+Tech Spec Kalabelajar.md
+design.md
+implementation-summary.md
+manual-test-walkthrough.md
