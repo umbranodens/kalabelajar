@@ -3,8 +3,8 @@
 ## 2026-05-13 11:50 - Core data foundation
 
 - Branch: `master`
-- Commit: pending before commit; final pushed hash reported after Git creates it
-- Pushed: pending
+- Commit: `1b0d270` (`feat: add core data foundation`)
+- Pushed: yes, to `origin/master`
 - Implemented: Core GORM models for roles, users, tutors, students, and activity logs; UUID creation hooks; migration model registration; startup migration execution; GORM repositories for core data; assignment service enforcing verified active tutor assignment; activity log creation for assignment.
 - Files changed: `cmd/server/main.go`, `go.mod`, `go.sum`, `internal/database/*`, `internal/models/core_data.go`, `internal/models/core_data_test.go`, `internal/repositories/core_data.go`, `internal/services/assignment_service.go`, `internal/services/assignment_service_test.go`, `docs/superpowers/plans/2026-05-13-core-data-foundation.md`, `CHANGELOG.md`, `implementation-summary.md`.
 - Automated tests: `go test ./...` passed. Initial red run failed because `github.com/google/uuid`, `database.MigrationModelNames`, models, and assignment service APIs were missing.
