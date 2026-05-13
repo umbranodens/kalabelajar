@@ -3,8 +3,8 @@
 ## 2026-05-13 16:15 - Lesson sessions and reports
 
 - Branch: `master`
-- Commit: pending before commit; final pushed hash reported after Git creates it
-- Pushed: pending
+- Commit: `119730e` (`feat: add lesson sessions and reports`)
+- Pushed: yes, to `origin/master`
 - Implemented: `lesson_sessions` and `lesson_reports` models/migrations, lesson report service validation, seed data for all session statuses, published/draft/missing-report examples, Tutor session history and report form, Parent published-only progress reports, Super Admin all-status session monitoring and detail pages, and manual testing walkthrough.
 - Files changed: `cmd/server/main.go`, `internal/models/core_data.go`, `internal/database/database.go`, `internal/database/database_test.go`, `internal/repositories/core_data.go`, `internal/services/lesson_report_service.go`, `internal/services/lesson_report_service_test.go`, `internal/handlers/admin.go`, `internal/seed/local.go`, `web/templates/dashboard.tmpl`, `web/templates/admin_lesson_sessions.tmpl`, `web/templates/admin_lesson_session_detail.tmpl`, `web/templates/tutor_sessions.tmpl`, `web/templates/tutor_report_form.tmpl`, `web/templates/parent_reports.tmpl`, `web/static/css/app.css`, `docs/superpowers/plans/2026-05-13-lesson-sessions-reports.md`, `manual-test-walkthrough.md`, `CHANGELOG.md`, `implementation-summary.md`.
 - Automated tests: Initial red `go test ./internal/services -run TestLessonReportService` failed because lesson models/service were missing. After implementation, `go test ./internal/services -run TestLessonReportService` and `go test ./...` passed.
