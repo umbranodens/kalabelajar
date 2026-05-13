@@ -3,8 +3,8 @@
 ## 2026-05-13 16:24 - UX polish
 
 - Branch: `master`
-- Commit: pending before commit; final pushed hash reported after Git creates it
-- Pushed: pending
+- Commit: `338e00a` (`feat: polish dashboard report ux`)
+- Pushed: yes, to `origin/master`
 - Implemented: form submit/loading feedback, lesson/session report status badges, sticky Tutor report submit action on mobile, and readability polish for report/session screens.
 - Files changed: `web/static/css/app.css`, `web/static/js/app.js`, `web/templates/dashboard.tmpl`, `web/templates/admin_lesson_sessions.tmpl`, `web/templates/admin_lesson_session_detail.tmpl`, `web/templates/tutor_sessions.tmpl`, `web/templates/tutor_report_form.tmpl`, `web/templates/parent_reports.tmpl`, `CHANGELOG.md`, `implementation-summary.md`.
 - Automated tests: `go test ./...` passed.
